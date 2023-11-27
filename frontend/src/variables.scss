@@ -1,0 +1,25 @@
+/* Variables and mixins declared here will be available in all other SCSS files */
+
+@import "bulma/sass/utilities/initial-variables";
+
+// https://github.com/jgthms/bulma/issues/1293
+$body-overflow-y: hidden;
+$body-size: 14px;
+
+$link: $cyan;
+
+$radius-small: 4px;
+$radius: 6px;
+$radius-large: 8px;
+
+$block-spacing: 1rem;
+
+$weight-normal: 400;
+
+$message-border-left: 4px;
+
+$message-header-weight: $weight-normal;
+$message-header-padding: 0.5em 0.5em 0.5em calc($message-border-left + 0.5em);
+
+$message-body-border-width: 0 0 0 $message-border-left;
+$message-body-padding: 0.5em;
