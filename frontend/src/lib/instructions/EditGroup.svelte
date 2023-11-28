@@ -16,11 +16,14 @@
 	let instructionsValid
 
 	export function makeData() {
-		return {
-		id: group?.id,
+		const data = {
 		name: $name.value,
 		instructions: instructions.makeData(),
 		}
+		if (group?.id) {
+			data.id = group.id
+		}
+		return data
 	}
 	$: valid = $name.valid && instructionsValid
 </script>
