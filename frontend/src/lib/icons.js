@@ -6,6 +6,7 @@ import command from "@fortawesome/fontawesome-free/svgs/solid/terminal.svg?raw"
 import database from "@fortawesome/fontawesome-free/svgs/solid/database.svg?raw"
 import edit from "@fortawesome/fontawesome-free/svgs/solid/pen-to-square.svg?raw"
 import error from "@fortawesome/fontawesome-free/svgs/solid/triangle-exclamation.svg?raw"
+import folder from "@fortawesome/fontawesome-free/svgs/regular/folder.svg?raw"
 import group from "@fortawesome/fontawesome-free/svgs/solid/layer-group.svg?raw"
 import less from "@fortawesome/fontawesome-free/svgs/solid/caret-up.svg?raw"
 import link from "@fortawesome/fontawesome-free/svgs/solid/link.svg?raw"
@@ -27,6 +28,7 @@ const icons = {
 	database,
 	edit,
 	error,
+	folder,
 	group,
 	less,
 	link,
