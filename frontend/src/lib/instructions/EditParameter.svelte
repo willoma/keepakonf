@@ -8,11 +8,11 @@
 </script>
 
 {#if param.type === "bool"}
-	<Toggle bind:value={$field.value} {label} />
+	<Toggle {field} {label} />
 {:else if param.type === "string"}
-	<InputText bind:value={$field.value} {label} />
+	<InputText {field} {label} />
 {:else if param.type === "[string]"}
-	<InputTextArray bind:value={$field.value} {label} />
+	<InputTextArray {field} {label} />
 {:else}
 	<pre>{JSON.stringify(param)}</pre>
 {/if}

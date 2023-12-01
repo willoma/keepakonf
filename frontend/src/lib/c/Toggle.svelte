@@ -1,5 +1,5 @@
 <script>
-	export let value
+	export let field
 	export let label = null
 
 	import { icon } from "$lib/icons"
@@ -32,21 +32,15 @@
 		}
 	}
 </style>
-<!--
 
-- remplacer les icofont par les svg
-
- -->
 <div class="field is-grouped">
 	<label class="control">
-		<input type="checkbox" {id} bind:checked={value} />
-		<!-- <label for={id}> -->
-			<span class="icon-text">
-				<span class="icon" class:checked={value}>
-					{@html icon(value?"checkboxyes":"checkboxno")}
-				</span>
-				{#if label}<span>{label}</span>{/if}
+		<input type="checkbox" {id} bind:checked={$field.value} />
+		<span class="icon-text">
+			<span class="icon" class:checked={$field.value}>
+				{@html icon($field.value?"checkboxyes":"checkboxno")}
 			</span>
-		<!-- </label> -->
+			{#if label}<span>{label}</span>{/if}
+		</span>
 	</label>
 </div>

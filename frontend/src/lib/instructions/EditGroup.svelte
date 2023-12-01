@@ -28,6 +28,6 @@
 	$: valid = $name.valid && instructionsValid
 </script>
 
-<InputText icon={group?.icon??"group"} placeholder="Group name" bind:value={$name.value} />
+<InputText icon={group?.icon??"group"} placeholder="Group name" field={name} />
 
 <EditInstructions bind:this={instructions} bind:valid={instructionsValid} initial={group?.instructions ?? []} />
