@@ -9,7 +9,7 @@ import (
 
 const (
 	logPath     = "/var/log/keepakonf.log"
-	logPageSize = 5
+	logPageSize = 10
 )
 
 type Logger struct {
