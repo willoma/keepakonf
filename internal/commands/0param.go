@@ -4,8 +4,10 @@ type ParamType string
 
 const (
 	ParamTypeBool        ParamType = "bool"
+	ParamTypeFilePath    ParamType = "filepath"
 	ParamTypeString      ParamType = "string"
 	ParamTypeStringArray ParamType = "[string]"
+	ParamTypeUsername    ParamType = "username"
 )
 
 type ParamDesc struct {
@@ -39,7 +41,7 @@ func (p ParamDesc) extractTyped(src map[string]any) any {
 		}
 		return b
 
-	case ParamTypeString:
+	case ParamTypeFilePath, ParamTypeString, ParamTypeUsername:
 		if !ok {
 			return ""
 		}
