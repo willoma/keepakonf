@@ -46,7 +46,9 @@
 					{/if}
 				</div>
 				<div class="column content is-two-thirds">
-					<Detail data={instruction.detail} />
+					{#if instruction.detail}
+						<Detail data={instruction.detail} />
+					{/if}
 				</div>
 			</div>
 		</div>

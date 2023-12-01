@@ -52,12 +52,15 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 		i.Info = info
 		i.Detail = detail
 
-		i.group.io.Emit("status", map[string]any{
+		msg := map[string]any{
 			"instruction": i.ID,
 			"status":      newStatus,
 			"info":        info,
-			"detail":      detailJSON.Bytes(),
-		})
+		}
+		if detail != nil {
+			msg["detail"] = detailJSON.Bytes()
+		}
+		i.group.io.Emit("status", msg)
 		i.group.updateStatus()
 	}
 
