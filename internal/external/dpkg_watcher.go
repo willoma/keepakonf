@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	dpkgStatusDir  = "/var/lib/dpkg"
-	dpkgStatusPath = dpkgStatusDir + "/status"
-	dedupDelay     = 100 * time.Millisecond
+	dpkgStatusDir         = "/var/lib/dpkg"
+	dpkgStatusPath        = dpkgStatusDir + "/status"
+	dpkgWatcherDedupDelay = 100 * time.Millisecond
 )
 
 type DpkgPackage struct {
@@ -58,7 +58,7 @@ func (d *dpkgWatcher) run() {
 				if event.Has(fsnotify.Create) && event.Name == dpkgStatusPath {
 					dedupMutex.Lock()
 					if dedupTimer == nil {
-						dedupTimer = time.AfterFunc(dedupDelay, func() {
+						dedupTimer = time.AfterFunc(dpkgWatcherDedupDelay, func() {
 							d.scan()
 
 							d.packagesMu.Lock()
@@ -71,7 +71,7 @@ func (d *dpkgWatcher) run() {
 							dedupTimer = nil
 						})
 					} else {
-						dedupTimer.Reset(dedupDelay)
+						dedupTimer.Reset(dpkgWatcherDedupDelay)
 					}
 					dedupMutex.Unlock()
 				}
