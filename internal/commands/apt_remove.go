@@ -18,33 +18,30 @@ var _ = register(
 		{"purge", "Purge the packages", ParamTypeBool},
 	},
 	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
-		var command string
+		var cmd string
 		if params["purge"].(bool) {
-			command = "purge"
+			cmd = "purge"
 		} else {
-			command = "remove"
+			cmd = "remove"
 		}
 		return &aptRemove{
+			command:  command{logger, msg},
 			packages: params["packages"].([]string),
-			command:  command,
-			logger:   logger,
-			msg:      msg,
+			cmd:      cmd,
 		}
 	},
 )
 
 type aptRemove struct {
+	command
+
 	packages []string
-	command  string
+	cmd      string
 
 	needToRemove []string
 
-	logger *log.Logger
-	msg    status.SendStatus
-
 	applying atomic.Bool
-
-	close func()
+	close    func()
 }
 
 func (a *aptRemove) Watch() {
@@ -130,6 +127,6 @@ func (a *aptRemove) Apply() bool {
 		"Successfully removed "+needToRemoveMsg,
 		"Failed removing "+needToRemoveMsg,
 		a.msg,
-		a.command, a.needToRemove,
+		a.cmd, a.needToRemove,
 	)
 }

@@ -9,7 +9,8 @@ import (
 	"github.com/willoma/keepakonf/internal/status"
 )
 
-var _ = register("apt install",
+var _ = register(
+	"apt install",
 	"packages",
 	"Install packages using apt",
 	ParamsDesc{
@@ -17,24 +18,21 @@ var _ = register("apt install",
 	},
 	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
 		return &aptInstall{
+			command:  command{logger, msg},
 			packages: params["packages"].([]string),
-			logger:   logger,
-			msg:      msg,
 		}
 	},
 )
 
 type aptInstall struct {
+	command
+
 	packages []string
 
 	needToInstall []string
 
-	logger *log.Logger
-	msg    status.SendStatus
-
 	applying atomic.Bool
-
-	close func()
+	close    func()
 }
 
 func (a *aptInstall) Watch() {

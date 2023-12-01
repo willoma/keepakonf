@@ -5,6 +5,11 @@ import (
 	"github.com/willoma/keepakonf/internal/status"
 )
 
+type command struct {
+	logger *log.Logger
+	msg    status.SendStatus
+}
+
 type Command interface {
 	Watch()
 	Stop()
