@@ -5,11 +5,10 @@
 	import { field } from 'svelte-forms'
 	import { required } from 'svelte-forms/validators'
 
-	import { InputText } from "$lib/c"
+	import { Field, Icon } from "$lib/c"
 
 	import EditInstructions from "./EditInstructions.svelte"
 
-	$: id = field('id', group?.id)
 	$: name = field('name', group?.name ?? "", [required()], { "checkOnInit": true})
 	
 	let instructions
@@ -17,8 +16,8 @@
 
 	export function makeData() {
 		const data = {
-		name: $name.value,
-		instructions: instructions.makeData(),
+			name: $name.value,
+			instructions: instructions.makeData(),
 		}
 		if (group?.id) {
 			data.id = group.id
@@ -28,6 +27,18 @@
 	$: valid = $name.valid && instructionsValid
 </script>
 
-<InputText icon={group?.icon??"group"} placeholder="Group name" field={name} />
+<Field field={name}>
+	<div class="control has-icons-left">
+		<input
+			type="text"
+			class="input"
+			class:is-danger={!$name.valid}
+			placeholder="Group name"
+			required
+			bind:value={$name.value}
+		/>
+		<Icon icon={group?.icon??"group"} class="is-left" />
+	</div>
+</Field>
 
 <EditInstructions bind:this={instructions} bind:valid={instructionsValid} initial={group?.instructions ?? []} />

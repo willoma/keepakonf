@@ -1,23 +1,19 @@
 <script>
 	export let field
-	export let label = null
+	export let label
 
-	import { Button } from "$lib/c"
+	import { Button, Field } from "$lib/c"
+	import { randomID } from "$lib/random"
 
+	const id = randomID()
+	
 	function doRemove(i) {
 		$field.value.splice(i, 1)
 		$field.value = $field.value
 	}
 </script>
 
-{#if label}
-	<div class="field">
-		<!-- svelte-ignore a11y-label-has-associated-control -->
-		<label class="label">{label}</label>
-	</div>
-{/if}
-
-<div class="field is-grouped is-grouped-multiline">
+<Field {field} {id} {label} horizontal grouped>
 	{#each $field.value as row, i}
 		<div class="control">
 			<div class="field has-addons">
@@ -33,4 +29,4 @@
 	<div class="control">
 		<Button icon="add" on:click={() => $field.value = [...$field.value, ""]}>Add</Button>
 	</div>
-</div>
+</Field>

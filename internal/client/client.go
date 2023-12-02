@@ -33,6 +33,8 @@ func Serve(s *socket.Socket, io socket.NamespaceInterface, data *data.Data, logg
 	c.On("remove group", c.removeGroup)
 
 	c.On("logs", c.logs)
+
+	c.On("users", c.users)
 }
 
 func callback(request []any, response ...any) {

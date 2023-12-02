@@ -1,7 +1,6 @@
 import add from "@fortawesome/fontawesome-free/svgs/solid/plus.svg?raw"
 import cancel from "@fortawesome/fontawesome-free/svgs/solid/rotate-left.svg?raw"
-import checkboxno from "@fortawesome/fontawesome-free/svgs/regular/square.svg?raw"
-import checkboxyes from "@fortawesome/fontawesome-free/svgs/solid/square-check.svg?raw"
+import check from "@fortawesome/fontawesome-free/svgs/solid/check.svg?raw"
 import command from "@fortawesome/fontawesome-free/svgs/solid/terminal.svg?raw"
 import database from "@fortawesome/fontawesome-free/svgs/solid/database.svg?raw"
 import edit from "@fortawesome/fontawesome-free/svgs/solid/pen-to-square.svg?raw"
@@ -22,8 +21,7 @@ import unknown from "@fortawesome/fontawesome-free/svgs/solid/question.svg?raw"
 const icons = {
 	add,
 	cancel,
-	checkboxno,
-	checkboxyes,
+	check,
 	command,
 	database,
 	edit,

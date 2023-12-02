@@ -23,7 +23,7 @@ var _ = register(
 	ParamsDesc{
 		{"source", "Source directory", ParamTypeFilePath},
 		{"destination", "Destination directory", ParamTypeFilePath},
-		{"owner", "Destination directory owner (if not already present)", ParamTypeUsername},
+		{"owner", "Destination dir owner", ParamTypeUsername},
 	},
 	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
 		return &fileMergeDirs{

@@ -6,33 +6,30 @@ export const socket = io()
 
 export const reconnecting = writable(false)
 
+// Values loaded on connect
+
 export const groups = writable([])
-
-export const commands = writable([])
-
-export const logs = writable([])
-
-export const logsReachedTheEnd = writable(false)
-
 const groupsMap = derived(
 	groups,
 	($groups) => Object.fromEntries($groups.map(grp => [grp.id, grp]))
 )
-
 export const group = derived(
 	groupsMap,
 	($groupsMap) => (id) => $groupsMap[id]
 )
 
+export const commands = writable([])
 const commandsMap = derived(
 	commands,
 	($commands) => Object.fromEntries($commands.map(cmd => [cmd.name, cmd]))
 )
-
 export const command = derived(
 	commandsMap,
 	($commandsMap) => (name) => $commandsMap[name]
 )
+
+export const logs = writable([])
+export const logsReachedTheEnd = writable(false)
 
 socket.on("connect", () => {
 	reconnecting.set(false)
@@ -52,6 +49,17 @@ socket.on("disconnect", (reason) => {
 		reconnecting.set(true)
 	}
 })
+
+// Requests only needed on some pages
+
+export const users = writable([], (set) => {
+	socket.emit("users", (response) => {
+		set(response)
+	})
+	return () => {}
+})
+
+// Events received asynchronously
 
 socket.on("add group", (data) => {
 	groups.update((groupz) => [...groupz, data])

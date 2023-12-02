@@ -2,21 +2,21 @@
 	export let param
 	export let field
 
-	import { InputText, InputTextArray, Toggle } from "$lib/c"
+	import { Bool, Filepath, String, StringArray, Username } from "./parameter"
 
 	$: label = param?.title ?? "Unknown"
 </script>
 
 {#if param.type === "bool"}
-	<Toggle {field} {label} />
+	<Bool {field} {label} />
 {:else if param.type === "filepath"}
-	<InputText {field} {label} />
+	<Filepath {field} {label} />
 {:else if param.type === "string"}
-	<InputText {field} {label} />
+	<String {field} {label} />
 {:else if param.type === "[string]"}
-	<InputTextArray {field} {label} />
+	<StringArray {field} {label} />
 {:else if param.type === "username"}
-	<InputText {field} {label} />
+	<Username {field} {label} />
 {:else}
 	<pre>{JSON.stringify(param)}</pre>
 {/if}
