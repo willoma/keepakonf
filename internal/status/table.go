@@ -1,6 +1,7 @@
 package status
 
 import (
+	"encoding/json"
 	"io"
 	"strings"
 )
@@ -26,8 +27,8 @@ func (t *Table) AppendRow(cells ...TableCell) {
 	t.Rows = append(t.Rows, cells)
 }
 
-func (t *Table) JSON(w io.StringWriter) {
-	startDetailJSON(w, "table")
+func (t *Table) JSON() json.RawMessage {
+	w := startDetailJSON("table")
 
 	w.WriteString(`{"`)
 
@@ -59,7 +60,8 @@ func (t *Table) JSON(w io.StringWriter) {
 	}
 
 	w.WriteString("]}")
-	endDetailJSON(w)
+
+	return endDetailJSON(w)
 }
 
 func writeTableRow(w io.StringWriter, r []TableCell) {

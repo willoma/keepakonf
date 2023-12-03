@@ -1,7 +1,7 @@
 package status
 
 import (
-	"io"
+	"encoding/json"
 	"strings"
 )
 
@@ -15,8 +15,8 @@ type Terminal struct {
 	Output  string
 }
 
-func (t *Terminal) JSON(w io.StringWriter) {
-	startDetailJSON(w, "terminal")
+func (t *Terminal) JSON() json.RawMessage {
+	w := startDetailJSON("terminal")
 
 	w.WriteString(`{"`)
 
@@ -34,5 +34,5 @@ func (t *Terminal) JSON(w io.StringWriter) {
 	w.WriteString(out)
 	w.WriteString(`"}`)
 
-	endDetailJSON(w)
+	return endDetailJSON(w)
 }

@@ -33,7 +33,7 @@ func (l *Logger) write(
 	groupID string,
 	instructionID string,
 	groupName string,
-	detail status.Detail,
+	detail json.RawMessage,
 ) {
 	jsonRec := rawJSON(msg, icon, status, groupID, instructionID, groupName, detail)
 
@@ -63,17 +63,17 @@ func (l *Logger) Info(
 	groupID string,
 	instructionID string,
 	groupName string,
-	detail status.Detail,
+	detail json.RawMessage,
 ) {
 	l.write(msg, icon, status, groupID, instructionID, groupName, detail)
 }
 
 func (l *Logger) Error(err error, msg string) {
-	l.write(msg, "error", status.StatusFailed, "", "", "", status.Error{Err: err})
+	l.write(msg, "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
 }
 
 func (l *Logger) Errorf(err error, format string, args ...any) {
-	l.write(fmt.Sprintf(format, args...), "error", status.StatusFailed, "", "", "", status.Error{Err: err})
+	l.write(fmt.Sprintf(format, args...), "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
 }
 
 // rawJSON returns the record in JSON format. We do not use json.Marshal
@@ -89,7 +89,7 @@ func rawJSON(
 	groupID string,
 	instructionID string,
 	groupName string,
-	detail status.Detail,
+	detail json.RawMessage,
 ) json.RawMessage {
 	var raw bytes.Buffer
 
@@ -130,7 +130,7 @@ func rawJSON(
 
 	if detail != nil {
 		raw.WriteString(`,"dtl":`)
-		detail.JSON(&raw)
+		raw.Write(detail)
 	}
 
 	raw.WriteByte('}')

@@ -1,7 +1,7 @@
 package runners
 
 import (
-	"bytes"
+	"encoding/json"
 
 	"github.com/rs/xid"
 	"github.com/willoma/keepakonf/internal/commands"
@@ -13,9 +13,9 @@ type Instruction struct {
 	Command    string         `json:"command"`
 	Parameters map[string]any `json:"parameters,omitempty"`
 
-	Status status.Status `json:"status"`
-	Info   string        `json:"info"`
-	Detail status.Detail `json:"detail"`
+	Status status.Status   `json:"status"`
+	Info   string          `json:"info"`
+	Detail json.RawMessage `json:"detail"`
 
 	command commands.Command
 
@@ -43,14 +43,14 @@ func (i *Instruction) Apply() bool {
 }
 
 func (i *Instruction) updateStatus(newStatus status.Status, info string, detail status.Detail) {
-	var detailJSON bytes.Buffer
+	var detailJSON json.RawMessage
 	if detail != nil {
-		detail.JSON(&detailJSON)
+		detailJSON = detail.JSON()
 	}
 	storeAndEmit := func() {
 		i.Status = newStatus
 		i.Info = info
-		i.Detail = detail
+		i.Detail = detailJSON
 
 		msg := map[string]any{
 			"instruction": i.ID,
@@ -58,7 +58,7 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 			"info":        info,
 		}
 		if detail != nil {
-			msg["detail"] = detailJSON.Bytes()
+			msg["detail"] = detailJSON
 		}
 		i.group.io.Emit("status", msg)
 		i.group.updateStatus()
@@ -70,7 +70,7 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 		i.group.logger.Info(
 			i.Command+": "+info,
 			desc.Icon,
-			newStatus, i.group.ID, i.ID, i.group.Name, detail,
+			newStatus, i.group.ID, i.ID, i.group.Name, detailJSON,
 		)
 	}
 

@@ -1,19 +1,25 @@
 package status
 
-import "io"
+import (
+	"bytes"
+	"encoding/json"
+)
 
 type DetailType string
 
 type Detail interface {
-	JSON(io.StringWriter)
+	JSON() json.RawMessage
 }
 
-func startDetailJSON(w io.StringWriter, detailType string) {
+func startDetailJSON(detailType string) *bytes.Buffer {
+	var w bytes.Buffer
 	w.WriteString(`{"t":"`)
 	w.WriteString(detailType)
 	w.WriteString(`","d":`)
+	return &w
 }
 
-func endDetailJSON(w io.StringWriter) {
+func endDetailJSON(w *bytes.Buffer) json.RawMessage {
 	w.WriteString("}")
+	return json.RawMessage(w.Bytes())
 }
