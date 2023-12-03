@@ -120,7 +120,7 @@ func (f *fileMergeDirs) Watch() {
 			result.AppendRow(
 				status.TableCell{
 					Status:  status.StatusApplied,
-					Content: f.source,
+					Content: f.destination,
 				},
 				status.TableCell{
 					Status:  status.StatusApplied,
@@ -131,7 +131,7 @@ func (f *fileMergeDirs) Watch() {
 			result.AppendRow(
 				status.TableCell{
 					Status:  status.StatusFailed,
-					Content: f.source,
+					Content: f.destination,
 				},
 				status.TableCell{
 					Status:  status.StatusFailed,
@@ -142,7 +142,7 @@ func (f *fileMergeDirs) Watch() {
 			result.AppendRow(
 				status.TableCell{
 					Status:  status.StatusUnknown,
-					Content: f.source,
+					Content: f.destination,
 				},
 				status.TableCell{
 					Status:  status.StatusUnknown,
@@ -153,7 +153,7 @@ func (f *fileMergeDirs) Watch() {
 			result.AppendRow(
 				status.TableCell{
 					Status:  status.StatusApplied,
-					Content: f.source,
+					Content: f.destination,
 				},
 				status.TableCell{
 					Status:  status.StatusApplied,
