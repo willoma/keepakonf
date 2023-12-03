@@ -64,23 +64,121 @@ func (f *fileMergeDirs) Watch() {
 			return
 		}
 
+		result := status.Table{
+			Header: []string{"Directory", "Status"},
+		}
+
+		switch srcStatus {
+		case external.FileStatusDirectory:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusTodo,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusTodo,
+					Content: "To merge",
+				},
+			)
+		case external.FileStatusFile:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusFailed,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusFailed,
+					Content: "Not a directory",
+				},
+			)
+		case external.FileStatusUnknown:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusUnknown,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusUnknown,
+					Content: "Unknown",
+				},
+			)
+		case external.FileStatusNotFound:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusApplied,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusApplied,
+					Content: "Does not exist",
+				},
+			)
+		}
+
+		switch dstStatus {
+		case external.FileStatusDirectory:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusApplied,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusApplied,
+					Content: "Exists",
+				},
+			)
+		case external.FileStatusFile:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusFailed,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusFailed,
+					Content: "Not a directory",
+				},
+			)
+		case external.FileStatusUnknown:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusUnknown,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusUnknown,
+					Content: "Unknown",
+				},
+			)
+		case external.FileStatusNotFound:
+			result.AppendRow(
+				status.TableCell{
+					Status:  status.StatusApplied,
+					Content: f.source,
+				},
+				status.TableCell{
+					Status:  status.StatusApplied,
+					Content: "To create",
+				},
+			)
+		}
+
 		switch {
 		case dstStatus == external.FileStatusFile:
-			f.msg(status.StatusFailed, fmt.Sprintf("destination %q is not a directory", f.destination), nil)
+			f.msg(status.StatusFailed, fmt.Sprintf("destination %q is not a directory", f.destination), &result)
 		case srcStatus == external.FileStatusFile:
-			f.msg(status.StatusFailed, fmt.Sprintf("source %q is not a directory", f.source), nil)
+			f.msg(status.StatusFailed, fmt.Sprintf("source %q is not a directory", f.source), &result)
 		case dstStatus == external.FileStatusUnknown:
-			f.msg(status.StatusUnknown, fmt.Sprintf("destination %q status unknown", f.destination), nil)
+			f.msg(status.StatusUnknown, fmt.Sprintf("destination %q status unknown", f.destination), &result)
 		case srcStatus == external.FileStatusUnknown:
-			f.msg(status.StatusUnknown, fmt.Sprintf("source %q status unknown", f.source), nil)
+			f.msg(status.StatusUnknown, fmt.Sprintf("source %q status unknown", f.source), &result)
 		case srcStatus == external.FileStatusDirectory && dstStatus == external.FileStatusDirectory:
-			f.msg(status.StatusTodo, fmt.Sprintf("Need to merge source %q into destination %q", f.source, f.destination), nil)
+			f.msg(status.StatusTodo, fmt.Sprintf("Need to merge source %q into destination %q", f.source, f.destination), &result)
 		case srcStatus == external.FileStatusDirectory && dstStatus == external.FileStatusNotFound:
-			f.msg(status.StatusTodo, fmt.Sprintf("Need to move source %q to destination %q", f.source, f.destination), nil)
+			f.msg(status.StatusTodo, fmt.Sprintf("Need to move source %q to destination %q", f.source, f.destination), &result)
 		case srcStatus == external.FileStatusNotFound && dstStatus == external.FileStatusNotFound:
-			f.msg(status.StatusTodo, fmt.Sprintf("Need to create %q", f.destination), nil)
+			f.msg(status.StatusTodo, fmt.Sprintf("Need to create %q", f.destination), &result)
 		case srcStatus == external.FileStatusNotFound && dstStatus == external.FileStatusDirectory:
-			f.msg(status.StatusApplied, fmt.Sprintf("destination %q exists as expected", f.destination), nil)
+			f.msg(status.StatusApplied, fmt.Sprintf("destination %q exists", f.destination), &result)
 		}
 	}
 
