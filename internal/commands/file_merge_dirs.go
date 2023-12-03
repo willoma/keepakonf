@@ -207,6 +207,9 @@ func (f *fileMergeDirs) Stop() {
 }
 
 func (f *fileMergeDirs) Apply() bool {
+	f.applying.Store(true)
+	defer f.applying.Store(false)
+
 	if finfo, err := os.Stat(f.source); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			// Source does not exist, simply make sure destination exists
