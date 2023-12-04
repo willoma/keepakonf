@@ -2,14 +2,8 @@
 	export let right = false
 </script>
 
-<style>
-	.is-justify-content-end {
-		width: 100%;
-	}
-</style>
-
 <div class="field">
-	<div class="buttons" class:is-justify-content-end={right}>
+	<div class="buttons" class:w-100={right}>
 		<slot />
 	</div>
 </div>

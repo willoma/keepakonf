@@ -35,6 +35,14 @@
 	)
 </script>
 
+<style lang="scss">
+	@import "bulma/sass/components/panel";
+
+	.panel-block:hover {
+			background-color: $panel-block-hover-background-color;
+	}
+</style>
+
 <div class="panel is-{statuscolor[$current[0]]}">
 	<p class="panel-heading">
 		<Icon icon="group">

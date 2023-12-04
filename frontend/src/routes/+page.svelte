@@ -5,14 +5,6 @@
     import LogsPanel from "./LogsPanel.svelte"
 </script>
 
-<style lang="scss">
-	@import "bulma/sass/components/panel";
-
-	.panel-block:hover {
-			background-color: $panel-block-hover-background-color;
-	}
-</style>
-
 <svelte:head>
 	<title>Keepakonf - Summary</title>
 </svelte:head>

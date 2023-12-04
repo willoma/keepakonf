@@ -6,7 +6,7 @@
 	import { applyInstruction } from "$lib/instructions"
 </script>
 
-<div class="is-flex is-justify-content-space-between is-align-items-center" style:width="100%">
+<div class="is-flex is-justify-content-space-between is-align-items-center w-100">
 	<div class="icon-text py-1">
 		<Icon icon={cmd?.icon??"command"}>
 			<b>{instruction.command}</b>: {instruction.info ?? "Unknown"}

@@ -10,9 +10,6 @@
 </script>
 
 <style>
-	.field, .field-body {
-		position: relative;
-	}
 	.error-message {
 		position: absolute;
 		z-index: 100;
@@ -29,7 +26,7 @@
 				<label class="label" for={id}>{label}</label>
 			{/if}
 		</div>
-		<div class="field-body">
+		<div class="field-body is-relative">
 			{#if !$field.valid}
 				<div class="error-message tag is-danger">{errors($field.errors)}</div>
 			{/if}
@@ -39,7 +36,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="field" class:has-addons={addons} class:is-grouped={grouped} class:is-grouped-multiline={grouped}>
+	<div class="field is-relative" class:has-addons={addons} class:is-grouped={grouped} class:is-grouped-multiline={grouped}>
 		{#if label}
 			<label class="label" for={id}>{label}</label>
 		{/if}

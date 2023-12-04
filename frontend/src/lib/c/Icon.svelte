@@ -16,14 +16,19 @@
 		height: 1em;
 		width: 1em;
 	}
+
+	.text {
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
 </style>
 
 {#if $$slots.default}
-	<span class="icon-text {$$props.tclass??""}">
+	<span class="icon-text is-flex-wrap-nowrap {$$props.tclass??""}">
 		<span class="{baseclass} {$$props.class??""}">
 			{@html iconFn(icon)}
 		</span>
-		<span><slot /></span>
+		<span class="text"><slot /></span>
 	</span>
 {:else}
 	<span class="{baseclass} {$$props.class??""}">
