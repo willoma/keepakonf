@@ -62,13 +62,14 @@ func (d *dpkgWatcher) run() {
 							d.scan()
 
 							d.packagesMu.Lock()
+							defer d.packagesMu.Unlock()
+
 							d.receiversMu.Lock()
+							defer d.receiversMu.Unlock()
+
 							for c := range d.receivers {
 								c <- d.packages
 							}
-							d.receiversMu.Unlock()
-							d.packagesMu.Unlock()
-							dedupTimer = nil
 						})
 					} else {
 						dedupTimer.Reset(dpkgWatcherDedupDelay)
@@ -189,12 +190,14 @@ func initDpkgWatcher(logger *log.Logger) {
 	})
 }
 
+// DpkgListen returns the list of known packages whenever it changes.
 func DpkgListen(logger *log.Logger) (target <-chan map[string]DpkgPackage, remove func()) {
 	initDpkgWatcher(logger)
 
 	return dpkgWatcherRunner.listen()
 }
 
+// DpkgPackages returns the list of known packages once.
 func DpkgPackages(logger *log.Logger) map[string]DpkgPackage {
 	initDpkgWatcher(logger)
 
