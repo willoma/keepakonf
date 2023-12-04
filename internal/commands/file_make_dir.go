@@ -55,7 +55,7 @@ func (f *fileMakeDir) Watch() {
 			switch fstatus {
 			case external.FileStatusDirectory:
 				f.msg(status.StatusApplied, fmt.Sprintf("%q exists", f.path), nil)
-			case external.FileStatusFile:
+			case external.FileStatusFile, external.FileStatusFileChange:
 				f.msg(status.StatusFailed, fmt.Sprintf("%q is not a directory", f.path), nil)
 			case external.FileStatusUnknown:
 				f.msg(status.StatusUnknown, fmt.Sprintf("%q status unknown", f.path), nil)

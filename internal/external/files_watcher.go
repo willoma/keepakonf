@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/willoma/keepakonf/internal/log"
@@ -16,8 +17,11 @@ type FileStatus int
 const (
 	FileStatusUnknown FileStatus = iota
 	FileStatusFile
+	FileStatusFileChange
 	FileStatusDirectory
 	FileStatusNotFound
+
+	filesWatcherDedupDelay = 200 * time.Millisecond
 )
 
 type filesWatcher struct {
@@ -25,6 +29,9 @@ type filesWatcher struct {
 	filePathReceivers map[string][]chan FileStatus
 	dirCount          map[string]int
 	receiversMu       sync.Mutex
+
+	newerEvents   map[string][]fsnotify.Op
+	newerEventsMu sync.Mutex
 
 	watcher *fsnotify.Watcher
 }
@@ -42,6 +49,11 @@ func (f *filesWatcher) run() {
 	}
 	f.watcher = watcher
 
+	var (
+		dedupTimers map[string]*time.Timer
+		dedupMutex  sync.Mutex
+	)
+
 	go func() {
 		for {
 			select {
@@ -49,7 +61,20 @@ func (f *filesWatcher) run() {
 				if !ok {
 					return
 				}
-				f.newEvent(event)
+
+				f.newerEventsMu.Lock()
+				f.newerEvents[event.Name] = append(f.newerEvents[event.Name], event.Op)
+				f.newerEventsMu.Unlock()
+
+				dedupMutex.Lock()
+				if dedupTimers[event.Name] == nil {
+					dedupTimers[event.Name] = time.AfterFunc(filesWatcherDedupDelay, func() {
+						f.forwardEvents(event.Name)
+					})
+				} else {
+					dedupTimers[event.Name].Reset(filesWatcherDedupDelay)
+				}
+				dedupMutex.Unlock()
 			case err, ok := <-watcher.Errors:
 				f.logger.Error(err, "Could not monitor files")
 				if !ok {
@@ -60,35 +85,50 @@ func (f *filesWatcher) run() {
 	}()
 }
 
-func (f *filesWatcher) newEvent(event fsnotify.Event) {
+func (f *filesWatcher) forwardEvents(name string) {
 	f.receiversMu.Lock()
 	defer f.receiversMu.Unlock()
 
-	receivers, ok := f.filePathReceivers[event.Name]
+	f.newerEventsMu.Lock()
+	defer f.newerEventsMu.Unlock()
+
+	receivers, ok := f.filePathReceivers[name]
 	if !ok {
 		return
 	}
 
+	var previousEv fsnotify.Op = 0
+	for _, ev := range f.newerEvents[name] {
+		if ev == previousEv {
+			continue
+		}
+		status := f.forwardEvent(name, ev)
+		for _, r := range receivers {
+			r <- status
+		}
+		previousEv = ev
+	}
+}
+
+func (f *filesWatcher) forwardEvent(name string, op fsnotify.Op) FileStatus {
 	switch {
-	case event.Has(fsnotify.Create):
-		finfo, err := os.Stat(event.Name)
+	case op.Has(fsnotify.Create):
+		finfo, err := os.Stat(name)
 		if err != nil {
-			f.logger.Errorf(err, "Could not check info for watched file %q", event.Name)
-			return
+			f.logger.Errorf(err, "Could not check info for watched file %q", name)
+			return FileStatusUnknown
 		}
 		if finfo.IsDir() {
-			for _, r := range receivers {
-				r <- FileStatusDirectory
-			}
+			return FileStatusDirectory
 		} else {
-			for _, r := range receivers {
-				r <- FileStatusFile
-			}
+			return FileStatusFile
 		}
-	case event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename):
-		for _, r := range receivers {
-			r <- FileStatusNotFound
-		}
+	case op.Has(fsnotify.Write):
+		return FileStatusFileChange
+	case op.Has(fsnotify.Remove), op.Has(fsnotify.Rename):
+		return FileStatusNotFound
+	default:
+		return FileStatusUnknown
 	}
 }
 
@@ -175,6 +215,8 @@ func initFilesWatcher(logger *log.Logger) {
 	})
 }
 
+// WatchFile allows watching for files creation, change or removal, and
+// differentiates files and directories on creation.
 func WatchFile(logger *log.Logger, filePath string) (target <-chan FileStatus, remove func()) {
 	initFilesWatcher(logger)
 
