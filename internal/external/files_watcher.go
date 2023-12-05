@@ -49,10 +49,8 @@ func (f *filesWatcher) run() {
 	}
 	f.watcher = watcher
 
-	var (
-		dedupTimers map[string]*time.Timer
-		dedupMutex  sync.Mutex
-	)
+	dedupTimers := map[string]*time.Timer{}
+	var dedupMu sync.Mutex
 
 	go func() {
 		for {
@@ -66,7 +64,7 @@ func (f *filesWatcher) run() {
 				f.newerEvents[event.Name] = append(f.newerEvents[event.Name], event.Op)
 				f.newerEventsMu.Unlock()
 
-				dedupMutex.Lock()
+				dedupMu.Lock()
 				if dedupTimers[event.Name] == nil {
 					dedupTimers[event.Name] = time.AfterFunc(filesWatcherDedupDelay, func() {
 						f.forwardEvents(event.Name)
@@ -74,7 +72,7 @@ func (f *filesWatcher) run() {
 				} else {
 					dedupTimers[event.Name].Reset(filesWatcherDedupDelay)
 				}
-				dedupMutex.Unlock()
+				dedupMu.Unlock()
 			case err, ok := <-watcher.Errors:
 				f.logger.Error(err, "Could not monitor files")
 				if !ok {
@@ -208,6 +206,7 @@ func initFilesWatcher(logger *log.Logger) {
 	filesWatcherRunnerOnce.Do(func() {
 		filesWatcherRunner = &filesWatcher{
 			filePathReceivers: map[string][]chan FileStatus{},
+			newerEvents:       map[string][]fsnotify.Op{},
 			dirCount:          map[string]int{},
 			logger:            logger,
 		}
