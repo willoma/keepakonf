@@ -2,6 +2,7 @@ package external
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"sort"
 	"strconv"
@@ -16,6 +17,48 @@ type User struct {
 	Name  string `json:"name"`
 	Home  string `json:"home"`
 	Shell string `json:"shell"`
+}
+
+func GetUser(username string) (User, error) {
+	f, err := os.Open(usersFile)
+	if err != nil {
+		return User{}, err
+	}
+
+	scan := bufio.NewScanner(f)
+
+	for scan.Scan() {
+		line := strings.TrimSpace(scan.Text())
+		if line[0] == '#' {
+			continue
+		}
+		fields := strings.Split(line, ":")
+		if len(fields) < 7 {
+			continue
+		}
+
+		id, err := strconv.Atoi(fields[2])
+		if err != nil {
+			continue
+		}
+
+		gid, err := strconv.Atoi(fields[3])
+		if err != nil {
+			continue
+		}
+
+		if fields[0] == username {
+			return User{
+				ID:    id,
+				GID:   gid,
+				Name:  fields[0],
+				Home:  fields[5],
+				Shell: fields[6],
+			}, nil
+		}
+	}
+
+	return User{}, errors.New("User not found")
 }
 
 func ListUsers() ([]User, error) {
