@@ -2,7 +2,7 @@
 	export let initial
 	export let valid
 
-	import { combined } from "svelte-forms"
+	import { combined, field } from "svelte-forms"
 	import { createEventDispatcher } from "svelte"
 
 	import { Button, Icon } from "$lib/c"
@@ -15,9 +15,21 @@
 
 	$: cmd = $command(initial.command)
 
-	$: parametersFields = cmd?.parameters?.map((param) => makefield(param, initial?.parameters?.[param.id])) ?? []
-	$: parametersCombined = combined("parameters", parametersFields, ($fields) => Object.fromEntries($fields.map((f) => [f.name, f.value])))
-	
+	let parametersFields = []
+	let parametersCombined = field("parameters", "")
+	let ready = false
+
+	function makeParametersFields() {
+		if (parametersFields.length || !cmd?.parameters) {
+			return
+		}
+		parametersFields = cmd.parameters.map((param) => makefield(param, initial?.parameters?.[param.id]))
+		parametersCombined = combined("parameters", parametersFields, ($fields) => Object.fromEntries($fields.map((f) => [f.name, f.value])))
+		ready = true
+	}
+
+	$: makeParametersFields(cmd, initial)
+
 	export function makeData() {
 		return {
 			"command": initial.command,
@@ -33,7 +45,7 @@
 	<Icon icon={cmd?.icon??"command"} tclass="block">
 		<b>{initial.command}</b>: {cmd?.description ?? "Unknown"}
 	</Icon>
-	{#if cmd?.parameters?.length}
+	{#if ready}
 		{#each cmd?.parameters ?? [] as param, i}
 			<EditParameter {param} field={parametersFields[i]} />
 		{/each}
