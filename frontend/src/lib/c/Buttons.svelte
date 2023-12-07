@@ -1,9 +1,5 @@
-<script>
-	export let right = false
-</script>
-
 <div class="field">
-	<div class="buttons" class:w-100={right}>
+	<div class="buttons">
 		<slot />
 	</div>
 </div>

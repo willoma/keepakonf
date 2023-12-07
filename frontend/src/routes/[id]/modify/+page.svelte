@@ -41,7 +41,7 @@
 </svelte:head>
 
 <form on:submit={doModify}>
-	<Title icon="edit">
+	<Title stickyactions icon="edit">
 		{grp?.name}
 		<Buttons slot="actions">
 			{#if confirmRemove}

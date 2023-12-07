@@ -7,6 +7,7 @@
 <script>
 	export let icon
 	export let baseclass = "icon"
+	export let ellipsis = false
 
 	import { icon as iconFn } from "$lib/icons"
 </script>
@@ -17,7 +18,7 @@
 		width: 1em;
 	}
 
-	.text {
+	.ellipsis {
 		text-overflow: ellipsis;
 		overflow: hidden;
 	}
@@ -28,7 +29,7 @@
 		<span class="{baseclass} {$$props.class??""}">
 			{@html iconFn(icon)}
 		</span>
-		<span class="text"><slot /></span>
+		<span class="text" class:ellipsis><slot /></span>
 	</span>
 {:else}
 	<span class="{baseclass} {$$props.class??""}">

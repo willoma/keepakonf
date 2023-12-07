@@ -1,10 +1,19 @@
 <script>
 	export let icon = null
+	export let stickyactions = false
 
 	import { Icon } from "$lib/c"
 </script>
 
-<div class="is-pulled-right">
+<style>
+	.stickyactions {
+		position: sticky;
+		top: 0;
+		z-index: 200;
+	}
+</style>
+
+<div class="is-pulled-right" class:stickyactions>
 	<slot name="actions" />
 </div>
 <h1 class="title">

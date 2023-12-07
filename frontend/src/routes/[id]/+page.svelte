@@ -18,7 +18,7 @@
 </svelte:head>
 
 {#if grp}
-	<Title icon={grp?.icon??"group"} iclass="has-text-{statuscolordark[grp?.status]}">
+	<Title stickyactions icon={grp?.icon??"group"} iclass="has-text-{statuscolordark[grp?.status]}">
 		{grp?.name}
 		<Buttons slot="actions">
 			{#if grp?.status === "todo"}

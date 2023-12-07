@@ -12,6 +12,7 @@
 	class="button {$$props.class??""}"
 	{type}
 	{disabled}
+	on:mousedown
 	on:click|stopPropagation
 >
 	{#if icon}

@@ -50,11 +50,9 @@
 	/>
 {/each}
 
-<Buttons right>
-	<Button class="is-primary" icon="add" on:click={() => showCommandChoice = true}>
-		Add instruction
-	</Button>
-</Buttons>
+<Button class="is-primary" icon="add" on:click={() => showCommandChoice = true}>
+	Add instruction
+</Button>
 
 {#if showCommandChoice}
 	<div class="modal is-active">

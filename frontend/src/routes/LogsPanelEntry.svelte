@@ -67,7 +67,7 @@
 		{/if}
 	</div>
 	<div class="is-flex-grow-1 is-flex-shrink-1 no-wrap no-overflow">
-		<Icon tclass="w-100" icon={log.ico}>{log.msg??"-"}</Icon>
+		<Icon tclass="w-100" icon={log.ico} ellipsis>{log.msg??"-"}</Icon>
 	</div>
 	<div class="is-flex-grow-0 is-flex-shrink-0 field is-grouped">
 		{#if group}
