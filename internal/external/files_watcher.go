@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+
 	"github.com/willoma/keepakonf/internal/log"
 )
 
@@ -25,7 +26,6 @@ const (
 )
 
 type filesWatcher struct {
-	logger            *log.Logger
 	filePathReceivers map[string][]chan FileStatus
 	dirCount          map[string]int
 	receiversMu       sync.Mutex
@@ -44,7 +44,7 @@ var (
 func (f *filesWatcher) run() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		f.logger.Error(err, "Could not create file watcher for files")
+		log.Error(err, "Could not create file watcher for files")
 		return
 	}
 	f.watcher = watcher
@@ -74,7 +74,7 @@ func (f *filesWatcher) run() {
 				}
 				dedupMu.Unlock()
 			case err, ok := <-watcher.Errors:
-				f.logger.Error(err, "Could not monitor files")
+				log.Error(err, "Could not monitor files")
 				if !ok {
 					return
 				}
@@ -113,7 +113,7 @@ func (f *filesWatcher) forwardEvent(name string, op fsnotify.Op) FileStatus {
 	case op.Has(fsnotify.Create):
 		finfo, err := os.Stat(name)
 		if err != nil {
-			f.logger.Errorf(err, "Could not check info for watched file %q", name)
+			log.Errorf(err, "Could not check info for watched file %q", name)
 			return FileStatusUnknown
 		}
 		if finfo.IsDir() {
@@ -132,17 +132,13 @@ func (f *filesWatcher) forwardEvent(name string, op fsnotify.Op) FileStatus {
 
 func (f *filesWatcher) startWatching(dirName string) {
 	if err := f.watcher.Add(dirName); err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			f.logger.Errorf(err, "Could not add directory %q to files watcher because its parent does not exist", dirName)
-			return
-		}
-		f.logger.Errorf(err, "Could not add directory %q to files watcher", dirName)
+		log.Errorf(err, "Could not add directory %q to files watcher", dirName)
 	}
 }
 
 func (f *filesWatcher) stopWatching(dirName string) {
 	if err := f.watcher.Remove(dirName); err != nil {
-		f.logger.Errorf(err, "Could not remove directory %q from files watcher", dirName)
+		log.Errorf(err, "Could not remove directory %q from files watcher", dirName)
 	}
 }
 
@@ -165,7 +161,7 @@ func (f *filesWatcher) listen(path string) (target <-chan FileStatus, remove fun
 		if errors.Is(err, fs.ErrNotExist) {
 			firstStatus = FileStatusNotFound
 		} else {
-			f.logger.Errorf(err, "Could not check %q status before watching", path)
+			log.Errorf(err, "Could not check %q status before watching", path)
 		}
 	} else if finfo.IsDir() {
 		firstStatus = FileStatusDirectory
@@ -202,13 +198,12 @@ func (f *filesWatcher) listen(path string) (target <-chan FileStatus, remove fun
 	}
 }
 
-func initFilesWatcher(logger *log.Logger) {
+func initFilesWatcher() {
 	filesWatcherRunnerOnce.Do(func() {
 		filesWatcherRunner = &filesWatcher{
 			filePathReceivers: map[string][]chan FileStatus{},
 			newerEvents:       map[string][]fsnotify.Op{},
 			dirCount:          map[string]int{},
-			logger:            logger,
 		}
 		filesWatcherRunner.run()
 	})
@@ -216,8 +211,8 @@ func initFilesWatcher(logger *log.Logger) {
 
 // WatchFile allows watching for files creation, change or removal, and
 // differentiates files and directories on creation.
-func WatchFile(logger *log.Logger, filePath string) (target <-chan FileStatus, remove func()) {
-	initFilesWatcher(logger)
+func WatchFile(filePath string) (target <-chan FileStatus, remove func()) {
+	initFilesWatcher()
 
 	return filesWatcherRunner.listen(filePath)
 }

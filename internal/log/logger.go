@@ -12,18 +12,13 @@ const (
 	logPageSize = 10
 )
 
-type Logger struct {
-	filepath          string
+var (
 	mu                sync.Mutex
 	records           []json.RawMessage
 	loadedAllFromFile bool
+	io                socket.NamespaceInterface
+)
 
-	io socket.NamespaceInterface
-}
-
-func NewLogService(io socket.NamespaceInterface) *Logger {
-	return &Logger{
-		filepath: logPath,
-		io:       io,
-	}
+func SetIO(newIO socket.NamespaceInterface) {
+	io = newIO
 }

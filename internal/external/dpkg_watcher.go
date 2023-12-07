@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+
 	"github.com/willoma/keepakonf/internal/log"
 )
 
@@ -23,7 +24,6 @@ type DpkgPackage struct {
 }
 
 type dpkgWatcher struct {
-	logger      *log.Logger
 	receivers   map[chan<- map[string]DpkgPackage]struct{}
 	receiversMu sync.Mutex
 
@@ -39,7 +39,7 @@ var (
 func (d *dpkgWatcher) run() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		d.logger.Error(err, "Could not create file watcher for dpkg status")
+		log.Error(err, "Could not create file watcher for dpkg status")
 		return
 	}
 
@@ -78,7 +78,7 @@ func (d *dpkgWatcher) run() {
 				}
 
 			case err, ok := <-watcher.Errors:
-				d.logger.Error(err, "Could not monitor dpkg status")
+				log.Error(err, "Could not monitor dpkg status")
 				if !ok {
 					return
 				}
@@ -87,7 +87,7 @@ func (d *dpkgWatcher) run() {
 	}()
 
 	if err := watcher.Add(dpkgStatusDir); err != nil {
-		d.logger.Errorf(err, "Could not add directory %q to watcher", dpkgStatusDir)
+		log.Errorf(err, "Could not add directory %q to watcher", dpkgStatusDir)
 	}
 
 	d.scan()
@@ -96,7 +96,7 @@ func (d *dpkgWatcher) run() {
 func (d *dpkgWatcher) scan() {
 	f, err := os.Open(dpkgStatusPath)
 	if err != nil {
-		d.logger.Error(err, "Could not open dpkg status")
+		log.Error(err, "Could not open dpkg status")
 		return
 	}
 	defer f.Close()
@@ -150,7 +150,7 @@ func (d *dpkgWatcher) scan() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		d.logger.Error(err, "Could not read dpkg status")
+		log.Error(err, "Could not read dpkg status")
 		return
 	}
 
@@ -179,10 +179,9 @@ func (d *dpkgWatcher) listPackages() map[string]DpkgPackage {
 	return d.packages
 }
 
-func initDpkgWatcher(logger *log.Logger) {
+func initDpkgWatcher() {
 	dpkgWatcherRunnerOnce.Do(func() {
 		dpkgWatcherRunner = &dpkgWatcher{
-			logger:    logger,
 			receivers: map[chan<- map[string]DpkgPackage]struct{}{},
 			packages:  map[string]DpkgPackage{},
 		}
@@ -191,15 +190,15 @@ func initDpkgWatcher(logger *log.Logger) {
 }
 
 // DpkgListen returns the list of known packages whenever it changes.
-func DpkgListen(logger *log.Logger) (target <-chan map[string]DpkgPackage, remove func()) {
-	initDpkgWatcher(logger)
+func DpkgListen() (target <-chan map[string]DpkgPackage, remove func()) {
+	initDpkgWatcher()
 
 	return dpkgWatcherRunner.listen()
 }
 
 // DpkgPackages returns the list of known packages once.
-func DpkgPackages(logger *log.Logger) map[string]DpkgPackage {
-	initDpkgWatcher(logger)
+func DpkgPackages() map[string]DpkgPackage {
+	initDpkgWatcher()
 
 	return dpkgWatcherRunner.listPackages()
 }

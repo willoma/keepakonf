@@ -4,22 +4,19 @@ import (
 	"github.com/zishang520/socket.io/v2/socket"
 
 	"github.com/willoma/keepakonf/internal/data"
-	"github.com/willoma/keepakonf/internal/log"
 )
 
 type client struct {
 	*socket.Socket
-	io     socket.NamespaceInterface
-	data   *data.Data
-	logger *log.Logger
+	io   socket.NamespaceInterface
+	data *data.Data
 }
 
-func Serve(s *socket.Socket, io socket.NamespaceInterface, data *data.Data, logger *log.Logger) {
+func Serve(s *socket.Socket, io socket.NamespaceInterface, data *data.Data) {
 	c := client{
 		Socket: s,
 		io:     io,
 		data:   data,
-		logger: logger,
 	}
 
 	c.On("apply group", c.applyGroup)

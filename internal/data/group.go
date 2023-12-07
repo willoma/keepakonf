@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/runners"
 )
 
@@ -33,7 +34,7 @@ func (d *Data) AppendGroup(group *runners.Group) {
 
 	d.groups = append(d.groups, group)
 	d.save()
-	d.logger.Info(
+	log.Info(
 		fmt.Sprintf("Added group %q", group.Name),
 		"group",
 		"", group.ID, "", "", nil,
@@ -54,7 +55,7 @@ func (d *Data) ModifyGroup(group *runners.Group) bool {
 	d.groups[i].StopWatch()
 	d.groups[i] = group
 	d.save()
-	d.logger.Info(
+	log.Info(
 		fmt.Sprintf("Modified group %q", group.Name),
 		"group",
 		"", group.ID, "", "", nil,
@@ -80,7 +81,7 @@ func (d *Data) RemoveGroup(id string) bool {
 		return true
 	}
 	d.save()
-	d.logger.Info(
+	log.Info(
 		fmt.Sprintf("Removed group %q", name),
 		"group",
 		"", "", "", "", nil,

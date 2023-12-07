@@ -12,7 +12,6 @@ import (
 	"sync/atomic"
 
 	"github.com/willoma/keepakonf/internal/external"
-	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
@@ -25,9 +24,9 @@ var _ = register(
 		{"destination", "Destination directory", ParamTypeFilePath},
 		{"owner", "Destination dir owner", ParamTypeUsername},
 	},
-	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
+	func(params map[string]any, msg status.SendStatus) Command {
 		return &fileMergeDirs{
-			command:     command{logger, msg},
+			command:     command{msg},
 			source:      params["source"].(string),
 			destination: params["destination"].(string),
 			owner:       params["owner"].(string),
@@ -50,10 +49,10 @@ type fileMergeDirs struct {
 }
 
 func (f *fileMergeDirs) Watch() {
-	srcChan, srcClose := external.WatchFile(f.logger, f.source)
+	srcChan, srcClose := external.WatchFile(f.source)
 	f.srcClose = srcClose
 
-	dstChan, dstClose := external.WatchFile(f.logger, f.destination)
+	dstChan, dstClose := external.WatchFile(f.destination)
 	f.dstClose = dstClose
 
 	var srcStatus, dstStatus external.FileStatus

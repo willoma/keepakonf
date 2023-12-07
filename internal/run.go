@@ -17,11 +17,11 @@ import (
 
 func Run(port int) (io.Closer, error) {
 	io := socket.NewServer(nil, nil)
-	logger := log.NewLogService(io.Sockets())
-	data := data.New(io, logger)
+	log.SetIO(io.Sockets())
+	data := data.New(io)
 
 	io.On("connection", func(clients ...any) {
-		client.Serve(clients[0].(*socket.Socket), io.Sockets(), data, logger)
+		client.Serve(clients[0].(*socket.Socket), io.Sockets(), data)
 	})
 
 	front, err := frontend.Handler()

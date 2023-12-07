@@ -5,7 +5,6 @@ import (
 	"sync/atomic"
 
 	"github.com/willoma/keepakonf/internal/external"
-	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
@@ -17,7 +16,7 @@ var _ = register(
 		{"packages", "Packages to remove", ParamTypeStringArray},
 		{"purge", "Purge the packages", ParamTypeBool},
 	},
-	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
+	func(params map[string]any, msg status.SendStatus) Command {
 		var cmd string
 		if params["purge"].(bool) {
 			cmd = "purge"
@@ -25,7 +24,7 @@ var _ = register(
 			cmd = "remove"
 		}
 		return &aptRemove{
-			command:  command{logger, msg},
+			command:  command{msg},
 			packages: params["packages"].([]string),
 			cmd:      cmd,
 		}
@@ -45,10 +44,10 @@ type aptRemove struct {
 }
 
 func (a *aptRemove) Watch() {
-	signals, close := external.DpkgListen(a.logger)
+	signals, close := external.DpkgListen()
 	a.close = close
 
-	a.update(external.DpkgPackages(a.logger))
+	a.update(external.DpkgPackages())
 
 	go func() {
 		for knownPackages := range signals {

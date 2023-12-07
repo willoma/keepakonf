@@ -4,7 +4,6 @@ import (
 	"github.com/rs/xid"
 	"github.com/zishang520/socket.io/v2/socket"
 
-	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
@@ -16,8 +15,7 @@ type Group struct {
 
 	Status status.Status `json:"status"`
 
-	io     socket.NamespaceInterface
-	logger *log.Logger
+	io socket.NamespaceInterface
 }
 
 func (g *Group) Watch() {
@@ -59,7 +57,7 @@ func (g *Group) updateStatus() {
 	}
 }
 
-func GroupFromMap(iface any, io socket.NamespaceInterface, logger *log.Logger) *Group {
+func GroupFromMap(iface any, io socket.NamespaceInterface) *Group {
 	mapped, ok := iface.(map[string]any)
 	if !ok {
 		// TODO Send error response to caller
@@ -78,7 +76,6 @@ func GroupFromMap(iface any, io socket.NamespaceInterface, logger *log.Logger) *
 		Name:   name,
 		Status: status.StatusUnknown,
 		io:     io,
-		logger: logger,
 	}
 
 	instructionsIfaces, _ := mapped["instructions"].([]any)

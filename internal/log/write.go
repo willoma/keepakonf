@@ -26,7 +26,7 @@ import (
 //   - dtl.d: Detail content (different according to which status.Detail is provided)
 // - err: Optional error
 
-func (l *Logger) write(
+func write(
 	msg string,
 	icon string,
 	status status.Status,
@@ -37,26 +37,28 @@ func (l *Logger) write(
 ) {
 	jsonRec := rawJSON(msg, icon, status, groupID, instructionID, groupName, detail)
 
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	mu.Lock()
+	defer mu.Unlock()
 
-	f, err := os.OpenFile(l.filepath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+	f, err := os.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
-		l.Error(err, "Could not open log file")
+		Error(err, "Could not open log file")
 		slog.Error("Could not open log file", "error", err)
 	} else {
 		if _, err := f.Write(append(jsonRec, '\n')); err != nil {
-			l.Error(err, "Could not write to log file")
+			Error(err, "Could not write to log file")
 			slog.Error("could not write log to file", "error", err)
 		}
 		f.Close()
 	}
 
-	l.records = append(l.records, jsonRec)
-	l.io.Emit("log", jsonRec)
+	records = append(records, jsonRec)
+	if io != nil {
+		io.Emit("log", jsonRec)
+	}
 }
 
-func (l *Logger) Info(
+func Info(
 	msg string,
 	icon string,
 	status status.Status,
@@ -65,15 +67,15 @@ func (l *Logger) Info(
 	groupName string,
 	detail json.RawMessage,
 ) {
-	l.write(msg, icon, status, groupID, instructionID, groupName, detail)
+	write(msg, icon, status, groupID, instructionID, groupName, detail)
 }
 
-func (l *Logger) Error(err error, msg string) {
-	l.write(msg, "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
+func Error(err error, msg string) {
+	write(msg, "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
 }
 
-func (l *Logger) Errorf(err error, format string, args ...any) {
-	l.write(fmt.Sprintf(format, args...), "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
+func Errorf(err error, format string, args ...any) {
+	write(fmt.Sprintf(format, args...), "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
 }
 
 // rawJSON returns the record in JSON format. We do not use json.Marshal

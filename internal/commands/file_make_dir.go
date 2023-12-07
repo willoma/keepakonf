@@ -10,7 +10,6 @@ import (
 	"sync/atomic"
 
 	"github.com/willoma/keepakonf/internal/external"
-	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
@@ -22,9 +21,9 @@ var _ = register(
 		{"path", "Directory path", ParamTypeFilePath},
 		{"owner", "Directory owner", ParamTypeUsername},
 	},
-	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
+	func(params map[string]any, msg status.SendStatus) Command {
 		return &fileMakeDir{
-			command: command{logger, msg},
+			command: command{msg},
 			path:    params["path"].(string),
 			owner:   params["owner"].(string),
 		}
@@ -41,7 +40,7 @@ type fileMakeDir struct {
 }
 
 func (f *fileMakeDir) Watch() {
-	signals, close := external.WatchFile(f.logger, f.path)
+	signals, close := external.WatchFile(f.path)
 	f.close = close
 
 	go func() {

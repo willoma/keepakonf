@@ -1,20 +1,22 @@
 package client
 
+import "github.com/willoma/keepakonf/internal/log"
+
 func (c *client) logs(a ...any) {
 	if len(a) < 2 {
-		callback(a, c.logger.GetPage(0))
+		callback(a, log.GetPage(0))
 		return
 	}
 
 	options, ok := a[0].(map[string]any)
 	if !ok {
-		callback(a, c.logger.GetPage(0))
+		callback(a, log.GetPage(0))
 		return
 	}
 
 	offsetIface, ok := options["offset"]
 	if !ok {
-		callback(a, c.logger.GetPage(0))
+		callback(a, log.GetPage(0))
 		return
 	}
 
@@ -23,5 +25,5 @@ func (c *client) logs(a ...any) {
 		offset = 0
 	}
 
-	callback(a, c.logger.GetPage(int(offset)))
+	callback(a, log.GetPage(int(offset)))
 }

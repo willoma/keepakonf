@@ -13,7 +13,7 @@ func (c *client) addGroup(a ...any) {
 		return
 	}
 
-	grp := runners.GroupFromMap(a[0], c.io, c.logger)
+	grp := runners.GroupFromMap(a[0], c.io)
 
 	c.data.AppendGroup(grp)
 
@@ -26,7 +26,7 @@ func (c *client) modifyGroup(a ...any) {
 		return
 	}
 
-	grp := runners.GroupFromMap(a[0], c.io, c.logger)
+	grp := runners.GroupFromMap(a[0], c.io)
 
 	if !c.data.ModifyGroup(grp) {
 		return

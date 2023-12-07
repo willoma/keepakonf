@@ -9,7 +9,6 @@ import (
 	"sync/atomic"
 
 	"github.com/willoma/keepakonf/internal/external"
-	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
@@ -46,14 +45,14 @@ var _ = register(
 		{"pictures", "Pictures", ParamTypeFilePath},
 		{"videos", "Videos", ParamTypeFilePath},
 	},
-	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
+	func(params map[string]any, msg status.SendStatus) Command {
 		user := params["user"].(string)
 		userData, err := external.GetUser(user)
 		if err != nil {
 			msg(status.StatusFailed, "Could not get user information for "+user, status.Error{Err: err})
 		}
 		return &xdgUserDir{
-			command: command{logger, msg},
+			command: command{msg},
 			user:    userData,
 			fpath:   filepath.Join(userData.Home, xdgUserDirPath),
 			required: map[string]string{
@@ -83,7 +82,7 @@ type xdgUserDir struct {
 }
 
 func (x *xdgUserDir) Watch() {
-	signals, close := external.WatchFile(x.logger, x.fpath)
+	signals, close := external.WatchFile(x.fpath)
 	x.close = close
 
 	go func() {

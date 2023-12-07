@@ -6,7 +6,6 @@ import (
 	"sync/atomic"
 
 	"github.com/willoma/keepakonf/internal/external"
-	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
@@ -17,9 +16,9 @@ var _ = register(
 	ParamsDesc{
 		{"path", "File path", ParamTypeFilePath},
 	},
-	func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
+	func(params map[string]any, msg status.SendStatus) Command {
 		return &fileRemove{
-			command: command{logger, msg},
+			command: command{msg},
 			path:    params["path"].(string),
 		}
 	},
@@ -34,7 +33,7 @@ type fileRemove struct {
 }
 
 func (f *fileRemove) Watch() {
-	signals, close := external.WatchFile(f.logger, f.path)
+	signals, close := external.WatchFile(f.path)
 	f.close = close
 
 	go func() {

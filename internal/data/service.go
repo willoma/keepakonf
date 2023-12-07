@@ -23,17 +23,15 @@ type Data struct {
 	groups []*runners.Group
 	mu     sync.Mutex
 
-	io     *socket.Server
-	logger *log.Logger
+	io *socket.Server
 
 	dedupTimer *time.Timer
 	dedupMutex sync.Mutex
 }
 
-func New(io *socket.Server, logger *log.Logger) *Data {
+func New(io *socket.Server) *Data {
 	d := &Data{
-		io:     io,
-		logger: logger,
+		io: io,
 	}
 	d.load()
 	return d
@@ -44,27 +42,27 @@ func (d *Data) load() {
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			d.groups = []*runners.Group{}
-			d.logger.Info(
+			log.Info(
 				"No database file, starting from scratch",
 				"database",
 				"", "", "", "", nil,
 			)
 			return
 		}
-		d.logger.Errorf(err, "Could not read database file %s", dbfilepath)
+		log.Errorf(err, "Could not read database file %s", dbfilepath)
 		return
 	}
 
 	var src []any
 	if err := json.Unmarshal(f, &src); err != nil {
-		d.logger.Errorf(err, "Wrong data in the database file %s", dbfilepath)
+		log.Errorf(err, "Wrong data in the database file %s", dbfilepath)
 		return
 	}
 
 	d.mu.Lock()
 	d.groups = make([]*runners.Group, len(src))
 	for i, srcG := range src {
-		g := runners.GroupFromMap(srcG, d.io.Sockets(), d.logger)
+		g := runners.GroupFromMap(srcG, d.io.Sockets())
 		g.Watch()
 		d.groups[i] = g
 	}
@@ -110,15 +108,15 @@ func (d *Data) doSave() {
 
 	bin, err := json.Marshal(dst)
 	if err != nil {
-		d.logger.Error(err, "Wrong data before saving the configuration")
+		log.Error(err, "Wrong data before saving the configuration")
 		return
 	}
 
 	if err := os.MkdirAll(dbdirpath, 0700); err != nil {
-		d.logger.Error(err, "Could not create configuration directory")
+		log.Error(err, "Could not create configuration directory")
 		return
 	}
 	if err := os.WriteFile(dbfilepath, bin, 0644); err != nil {
-		d.logger.Error(err, "Could not save configuration")
+		log.Error(err, "Could not save configuration")
 	}
 }

@@ -1,13 +1,11 @@
 package commands
 
 import (
-	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
 type command struct {
-	logger *log.Logger
-	msg    status.SendStatus
+	msg status.SendStatus
 }
 
 type Command interface {
@@ -16,7 +14,7 @@ type Command interface {
 	Apply() bool
 }
 
-type constructor func(params map[string]any, logger *log.Logger, msg status.SendStatus) Command
+type constructor func(params map[string]any, msg status.SendStatus) Command
 
 type definition struct {
 	description Description
@@ -32,11 +30,11 @@ func register(name, icon, description string, parameters ParamsDesc, c construct
 	return struct{}{}
 }
 
-func Init(name string, params map[string]any, logger *log.Logger, msg status.SendStatus) Command {
+func Init(name string, params map[string]any, msg status.SendStatus) Command {
 	def, ok := byName[name]
 	if !ok {
 		return nil
 	}
 	def.description.Parameters.EnsureTyped(params)
-	return def.constructor(params, logger, msg)
+	return def.constructor(params, msg)
 }

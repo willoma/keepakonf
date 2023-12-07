@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 
 	"github.com/rs/xid"
+
 	"github.com/willoma/keepakonf/internal/commands"
+	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
 )
 
@@ -67,7 +69,7 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 	desc := commands.GetDescription(i.Command)
 
 	log := func() {
-		i.group.logger.Info(
+		log.Info(
 			i.Command+": "+info,
 			desc.Icon,
 			newStatus, i.group.ID, i.ID, i.group.Name, detailJSON,
@@ -129,6 +131,6 @@ func instructionFromMap(iface any, grp *Group) *Instruction {
 		Parameters: parameters,
 		group:      grp,
 	}
-	i.command = commands.Init(command, parameters, grp.logger, i.updateStatus)
+	i.command = commands.Init(command, parameters, i.updateStatus)
 	return i
 }
