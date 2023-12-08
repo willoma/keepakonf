@@ -17,14 +17,14 @@ var _ = register(
 	},
 	func(params map[string]any, msg status.SendStatus) Command {
 		return &aptInstall{
-			command:  command{msg},
+			msg:      msg,
 			packages: params["packages"].([]string),
 		}
 	},
 )
 
 type aptInstall struct {
-	command
+	msg status.SendStatus
 
 	packages []string
 

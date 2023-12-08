@@ -24,7 +24,7 @@ var _ = register(
 			cmd = "remove"
 		}
 		return &aptRemove{
-			command:  command{msg},
+			msg:      msg,
 			packages: params["packages"].([]string),
 			cmd:      cmd,
 		}
@@ -32,7 +32,7 @@ var _ = register(
 )
 
 type aptRemove struct {
-	command
+	msg status.SendStatus
 
 	packages []string
 	cmd      string

@@ -26,7 +26,7 @@ var _ = register(
 	},
 	func(params map[string]any, msg status.SendStatus) Command {
 		return &fileMergeDirs{
-			command:     command{msg},
+			msg:         msg,
 			source:      params["source"].(string),
 			destination: params["destination"].(string),
 			owner:       params["owner"].(string),
@@ -37,7 +37,7 @@ var _ = register(
 )
 
 type fileMergeDirs struct {
-	command
+	msg         status.SendStatus
 	source      string
 	destination string
 	owner       string

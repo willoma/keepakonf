@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"sync/atomic"
 
 	"github.com/willoma/keepakonf/internal/external"
 	"github.com/willoma/keepakonf/internal/status"
@@ -30,7 +29,7 @@ var (
 	}
 )
 
-var _ = register(
+var _ = registerFileWatcher(
 	"xdg user dir",
 	"folder",
 	"Set XDG user directories",
@@ -45,16 +44,16 @@ var _ = register(
 		{"pictures", "Pictures", ParamTypeFilePath},
 		{"videos", "Videos", ParamTypeFilePath},
 	},
-	func(params map[string]any, msg status.SendStatus) Command {
+	func(params map[string]any, msg status.SendStatus) fileWatcherCommand {
 		user := params["user"].(string)
 		userData, err := external.GetUser(user)
 		if err != nil {
 			msg(status.StatusFailed, "Could not get user information for "+user, status.Error{Err: err})
 		}
 		return &xdgUserDir{
-			command: command{msg},
-			user:    userData,
-			fpath:   filepath.Join(userData.Home, xdgUserDirPath),
+			msg:   msg,
+			user:  userData,
+			fpath: filepath.Join(userData.Home, xdgUserDirPath),
 			required: map[string]string{
 				"DESKTOP":     params["desktop"].(string),
 				"DOWNLOAD":    params["download"].(string),
@@ -70,38 +69,27 @@ var _ = register(
 )
 
 type xdgUserDir struct {
-	command
+	msg status.SendStatus
 
 	user  external.User
 	fpath string
 
 	required map[string]string
-
-	applying atomic.Bool
-	close    func()
 }
 
-func (x *xdgUserDir) Watch() {
-	signals, close := external.WatchFile(x.fpath)
-	x.close = close
+func (x *xdgUserDir) getPath() string {
+	return x.fpath
+}
 
-	go func() {
-		for fstatus := range signals {
-			if x.applying.Load() {
-				// No update if it is currently applying
-				continue
-			}
-
-			switch fstatus {
-			case external.FileStatusFile, external.FileStatusFileChange:
-				x.msg(x.check())
-			case external.FileStatusDirectory:
-				x.msg(status.StatusFailed, `"`+x.fpath+`" is a directory`, nil)
-			case external.FileStatusNotFound:
-				x.msg(status.StatusFailed, `File "`+x.fpath+`" not found`, nil)
-			}
-		}
-	}()
+func (x *xdgUserDir) newStatus(fstatus external.FileStatus) {
+	switch fstatus {
+	case external.FileStatusFile, external.FileStatusFileChange:
+		x.msg(x.check())
+	case external.FileStatusDirectory:
+		x.msg(status.StatusFailed, `"`+x.fpath+`" is a directory`, nil)
+	case external.FileStatusNotFound:
+		x.msg(status.StatusFailed, `File "`+x.fpath+`" not found`, nil)
+	}
 }
 
 func (x *xdgUserDir) check() (status.Status, string, status.Detail) {
@@ -150,13 +138,7 @@ func (x *xdgUserDir) check() (status.Status, string, status.Detail) {
 	return status.StatusApplied, "XDG dirs for " + x.user.Name + " are as expected", &result
 }
 
-func (x *xdgUserDir) Stop() {
-	if x.close != nil {
-		x.close()
-	}
-}
-
-func (x *xdgUserDir) Apply() bool {
+func (x *xdgUserDir) apply() bool {
 	st, msg, det := x.check()
 	if st != status.StatusTodo {
 		x.msg(st, msg, det)
