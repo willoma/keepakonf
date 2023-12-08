@@ -32,6 +32,7 @@ func Serve(s *socket.Socket, io socket.NamespaceInterface, data *data.Data) {
 	c.On("logs", c.logs)
 
 	c.On("users", c.users)
+	c.On("global variables", c.globalVariables)
 }
 
 func callback(request []any, response ...any) {

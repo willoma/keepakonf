@@ -12,3 +12,7 @@ func (c *client) users(a ...any) {
 	}
 	callback(a, users)
 }
+
+func (c *client) globalVariables(a ...any) {
+	callback(a, external.GlobalVariables)
+}

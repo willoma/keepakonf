@@ -2,12 +2,11 @@
 	export let initial
 	export let valid
 
-	// import { field, combined } from 'svelte-forms'
-
-	import { Button, Buttons, Icon } from "$lib/c"
+	import { Button, Icon } from "$lib/c"
 	import { commands } from "$lib/store"
 
 	import EditInstruction from "./EditInstruction.svelte"
+	import VariableInserter from "./VariableInserter.svelte"
 
 	let instructions = []
 
@@ -41,14 +40,16 @@
 	$: valid = !allValid.includes(false)
 </script>
 
-{#each instructions as instruction, i}
-	<EditInstruction
-		initial={instruction}
-		bind:this={allComponents[i]}
-		bind:valid={allValid[i]}
-		on:remove={() => removeInstruction(i)}
-	/>
-{/each}
+<VariableInserter>
+	{#each instructions as instruction, i}
+		<EditInstruction
+			initial={instruction}
+			bind:this={allComponents[i]}
+			bind:valid={allValid[i]}
+			on:remove={() => removeInstruction(i)}
+		/>
+	{/each}
+</VariableInserter>
 
 <Button class="is-primary" icon="add" on:click={() => showCommandChoice = true}>
 	Add instruction

@@ -17,6 +17,7 @@ import run from "@fortawesome/fontawesome-free/svgs/solid/gears.svg?raw"
 import save from "@fortawesome/fontawesome-free/svgs/solid/floppy-disk.svg?raw"
 import search from "@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw"
 import unknown from "@fortawesome/fontawesome-free/svgs/solid/question.svg?raw"
+import variable from "@fortawesome/fontawesome-free/svgs/solid/code.svg?raw"
 
 const icons = {
 	add,
@@ -38,6 +39,7 @@ const icons = {
 	save,
 	search,
 	unknown,
+	variable,
 }
 
 export function icon(i) {

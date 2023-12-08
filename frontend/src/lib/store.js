@@ -59,6 +59,13 @@ export const users = writable([], (set) => {
 	return () => {}
 })
 
+export const globalVariables = writable([], (set) => {
+	socket.emit("global variables", (response) => {
+		set(response)
+	})
+	return () => {}
+})
+
 // Events received asynchronously
 
 socket.on("add group", (data) => {
