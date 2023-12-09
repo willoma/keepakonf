@@ -79,7 +79,7 @@ func (f *fileMergeDirs) Watch() {
 					Content: "To merge",
 				},
 			)
-		case external.FileStatusFile, external.FileStatusFileChange:
+		case external.FileStatusFile:
 			result.AppendRow(
 				status.TableCell{
 					Status:  status.StatusFailed,
@@ -126,7 +126,7 @@ func (f *fileMergeDirs) Watch() {
 					Content: "Exists",
 				},
 			)
-		case external.FileStatusFile, external.FileStatusFileChange:
+		case external.FileStatusFile:
 			result.AppendRow(
 				status.TableCell{
 					Status:  status.StatusFailed,
@@ -162,9 +162,9 @@ func (f *fileMergeDirs) Watch() {
 		}
 
 		switch {
-		case dstStatus == external.FileStatusFile, dstStatus == external.FileStatusFileChange:
+		case dstStatus == external.FileStatusFile:
 			f.msg(status.StatusFailed, fmt.Sprintf("destination %q is not a directory", f.destination), &result)
-		case srcStatus == external.FileStatusFile, srcStatus == external.FileStatusFileChange:
+		case srcStatus == external.FileStatusFile:
 			f.msg(status.StatusFailed, fmt.Sprintf("source %q is not a directory", f.source), &result)
 		case dstStatus == external.FileStatusUnknown:
 			f.msg(status.StatusUnknown, fmt.Sprintf("destination %q status unknown", f.destination), &result)

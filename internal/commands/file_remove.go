@@ -34,7 +34,7 @@ func (f *fileRemove) getPath() string {
 
 func (f *fileRemove) newStatus(fstatus external.FileStatus) {
 	switch fstatus {
-	case external.FileStatusDirectory, external.FileStatusFile, external.FileStatusFileChange:
+	case external.FileStatusDirectory, external.FileStatusFile:
 		f.msg(status.StatusTodo, fmt.Sprintf("Need to remove %q", f.path), nil)
 	case external.FileStatusUnknown:
 		f.msg(status.StatusUnknown, fmt.Sprintf("%q status unknown", f.path), nil)

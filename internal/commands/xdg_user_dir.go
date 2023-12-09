@@ -83,7 +83,7 @@ func (x *xdgUserDir) getPath() string {
 
 func (x *xdgUserDir) newStatus(fstatus external.FileStatus) {
 	switch fstatus {
-	case external.FileStatusFile, external.FileStatusFileChange:
+	case external.FileStatusFile:
 		x.msg(x.check())
 	case external.FileStatusDirectory:
 		x.msg(status.StatusFailed, `"`+x.fpath+`" is a directory`, nil)
