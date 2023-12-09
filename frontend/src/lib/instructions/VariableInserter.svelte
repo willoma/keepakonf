@@ -26,7 +26,7 @@
 	}
 </style>
 
-<div class="variableinserter" on:focusin={(e) => focusOnInput = e.target.nodeName === "INPUT"} on:focusout={() => focusOnInput = false}>
+<div class="block variableinserter" on:focusin={(e) => focusOnInput = e.target.nodeName === "INPUT"} on:focusout={() => focusOnInput = false}>
 	<slot />
 </div>
 
