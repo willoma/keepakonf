@@ -47,7 +47,7 @@ func (i *Instruction) Apply() bool {
 func (i *Instruction) updateStatus(newStatus status.Status, info string, detail status.Detail) {
 	var detailJSON json.RawMessage
 	if detail != nil {
-		detailJSON = detail.JSON()
+		detailJSON = status.DetailJSON(detail)
 	}
 	storeAndEmit := func() {
 		i.Status = newStatus

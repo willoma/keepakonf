@@ -1,19 +1,15 @@
 package status
 
-import (
-	"encoding/json"
-)
+import "encoding/json"
 
 type Error struct {
 	Err error
 }
 
-func (e Error) JSON() json.RawMessage {
-	w := startDetailJSON("error")
+func (e Error) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Err.Error())
+}
 
-	w.WriteString(`"`)
-	w.WriteString(e.Err.Error())
-	w.WriteString(`"`)
-
-	return endDetailJSON(w)
+func (e Error) DetailType() string {
+	return "error"
 }

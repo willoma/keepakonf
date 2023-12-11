@@ -71,11 +71,11 @@ func Info(
 }
 
 func Error(err error, msg string) {
-	write(msg, "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
+	write(msg, "error", status.StatusFailed, "", "", "", status.DetailJSON(status.Error{Err: err}))
 }
 
 func Errorf(err error, format string, args ...any) {
-	write(fmt.Sprintf(format, args...), "error", status.StatusFailed, "", "", "", status.Error{Err: err}.JSON())
+	write(fmt.Sprintf(format, args...), "error", status.StatusFailed, "", "", "", status.DetailJSON(status.Error{Err: err}))
 }
 
 // rawJSON returns the record in JSON format. We do not use json.Marshal

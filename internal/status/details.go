@@ -5,21 +5,27 @@ import (
 	"encoding/json"
 )
 
-type DetailType string
-
 type Detail interface {
-	JSON() json.RawMessage
+	DetailType() string
 }
 
-func startDetailJSON(detailType string) *bytes.Buffer {
-	var w bytes.Buffer
-	w.WriteString(`{"t":"`)
-	w.WriteString(detailType)
-	w.WriteString(`","d":`)
-	return &w
-}
+func DetailJSON(d Detail) json.RawMessage {
+	result, err := json.Marshal(struct {
+		Type   string `json:"t"`
+		Detail any    `json:"d"`
+	}{
+		Type:   d.DetailType(),
+		Detail: d,
+	})
+	if err != nil {
+		var b bytes.Buffer
+		b.WriteString(`{"t":"`)
+		b.WriteString(d.DetailType())
+		b.WriteString(`","d":"`)
+		b.WriteString(err.Error())
+		b.WriteString(`"}`)
+		return json.RawMessage(b.Bytes())
+	}
 
-func endDetailJSON(w *bytes.Buffer) json.RawMessage {
-	w.WriteString("}")
-	return json.RawMessage(w.Bytes())
+	return json.RawMessage(result)
 }
