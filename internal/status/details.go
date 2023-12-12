@@ -29,3 +29,36 @@ func DetailJSON(d Detail) json.RawMessage {
 
 	return json.RawMessage(result)
 }
+
+type Error string
+
+func (e Error) DetailType() string {
+	return "error"
+}
+
+type TableCell struct {
+	Status  Status `json:"s"`
+	Content string `json:"c"`
+}
+
+type Table struct {
+	Header []string      `json:"h,omitempty"`
+	Rows   [][]TableCell `json:"r"`
+}
+
+func (t *Table) DetailType() string {
+	return "table"
+}
+
+func (t *Table) AppendRow(cells ...TableCell) {
+	t.Rows = append(t.Rows, cells)
+}
+
+type Terminal struct {
+	Command string `json:"cmd,omitempty"`
+	Output  string `json:"out"`
+}
+
+func (t *Terminal) DetailType() string {
+	return "terminal"
+}
