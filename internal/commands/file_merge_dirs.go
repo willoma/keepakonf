@@ -214,7 +214,7 @@ func (f *fileMergeDirs) Apply() bool {
 			// Source does not exist, simply make sure destination exists
 			return f.confirmDestination()
 		} else {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of source %q", f.source), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of source %q", f.source), status.Error(err.Error()))
 			return false
 		}
 	} else if !finfo.IsDir() {
@@ -236,25 +236,25 @@ func (f *fileMergeDirs) confirmDestination() bool {
 	finfo, err := os.Stat(f.destination)
 	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of %q", f.destination), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of %q", f.destination), status.Error(err.Error()))
 			return false
 		}
 
 		ownerUser, err := user.Lookup(f.owner)
 		if err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not get user information for %q", f.owner), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not get user information for %q", f.owner), status.Error(err.Error()))
 			return false
 		}
 
 		if err := os.MkdirAll(f.destination, 0o755); err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not create destination %q", f.destination), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not create destination %q", f.destination), status.Error(err.Error()))
 			return false
 		}
 
 		uid, _ := strconv.Atoi(ownerUser.Uid)
 		gid, _ := strconv.Atoi(ownerUser.Gid)
 		if err := os.Chown(f.destination, uid, gid); err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not change ownership of destination %q", f.destination), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not change ownership of destination %q", f.destination), status.Error(err.Error()))
 			return false
 		}
 
@@ -275,7 +275,7 @@ func (f *fileMergeDirs) confirmDestination() bool {
 func (f *fileMergeDirs) mergeDir(srcdir, dstdir string) bool {
 	entries, err := os.ReadDir(srcdir)
 	if err != nil {
-		f.msg(status.StatusFailed, fmt.Sprintf("Could not read content of %q", srcdir), status.Error{Err: err})
+		f.msg(status.StatusFailed, fmt.Sprintf("Could not read content of %q", srcdir), status.Error(err.Error()))
 		return false
 	}
 
@@ -288,13 +288,13 @@ func (f *fileMergeDirs) mergeDir(srcdir, dstdir string) bool {
 		dstFinfo, err := os.Stat(dstPath)
 		if err != nil {
 			if !errors.Is(err, fs.ErrNotExist) {
-				f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of %q", dstPath), status.Error{Err: err})
+				f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of %q", dstPath), status.Error(err.Error()))
 				return false
 			}
 
 			// Destination does not exist, simply move source
 			if err := os.Rename(srcPath, dstPath); err != nil {
-				f.msg(status.StatusFailed, fmt.Sprintf("Could not move %q to %q", srcPath, dstdir), status.Error{Err: err})
+				f.msg(status.StatusFailed, fmt.Sprintf("Could not move %q to %q", srcPath, dstdir), status.Error(err.Error()))
 				return false
 			}
 			return true
@@ -320,26 +320,26 @@ func (f *fileMergeDirs) mergeDir(srcdir, dstdir string) bool {
 		// From here, we know both are NOT directories, problems may arise :-)
 		srcData, err := os.ReadFile(srcPath)
 		if err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not read content of source %q", srcPath), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not read content of source %q", srcPath), status.Error(err.Error()))
 			return false
 		}
 		srcSum := sha256.Sum256(srcData)
 
 		dstData, err := os.ReadFile(dstPath)
 		if err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not read content of destination %q", dstPath), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not read content of destination %q", dstPath), status.Error(err.Error()))
 			return false
 		}
 		dstSum := sha256.Sum256(dstData)
 
 		if srcSum != dstSum {
 			// Files are different, we do not know what to do
-			f.msg(status.StatusFailed, fmt.Sprintf("Source %q and destination %q are different", srcPath, dstPath), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Source %q and destination %q are different", srcPath, dstPath), status.Error(err.Error()))
 			return false
 		}
 
 		if err := os.Remove(srcPath); err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not remove source %q", srcPath), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not remove source %q", srcPath), status.Error(err.Error()))
 			return false
 		}
 	}

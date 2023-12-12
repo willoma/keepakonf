@@ -45,7 +45,7 @@ func (f *fileRemove) newStatus(fstatus external.FileStatus) {
 
 func (f *fileRemove) apply() bool {
 	if err := os.RemoveAll(f.path); err != nil {
-		f.msg(status.StatusFailed, fmt.Sprintf("Failed removing %q", f.path), status.Error{Err: err})
+		f.msg(status.StatusFailed, fmt.Sprintf("Failed removing %q", f.path), status.Error(err.Error()))
 		return false
 	}
 

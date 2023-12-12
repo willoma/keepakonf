@@ -48,7 +48,7 @@ var _ = registerFileWatcher(
 		user := params["user"].(string)
 		userData, err := external.GetUser(user)
 		if err != nil {
-			msg(status.StatusFailed, "Could not get user information for "+user, status.Error{Err: err})
+			msg(status.StatusFailed, "Could not get user information for "+user, status.Error(err.Error()))
 		}
 		return &xdgUserDir{
 			msg:   msg,
@@ -95,7 +95,7 @@ func (x *xdgUserDir) newStatus(fstatus external.FileStatus) {
 func (x *xdgUserDir) check() (status.Status, string, status.Detail) {
 	f, err := os.Open(x.fpath)
 	if err != nil {
-		return status.StatusFailed, `Could not open "` + x.fpath + "`", status.Error{Err: err}
+		return status.StatusFailed, `Could not open "` + x.fpath + "`", status.Error(err.Error())
 	}
 	defer f.Close()
 
@@ -112,7 +112,7 @@ func (x *xdgUserDir) check() (status.Status, string, status.Detail) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		x.msg(status.StatusFailed, `Could not read "`+x.fpath+`"`, status.Error{Err: err})
+		x.msg(status.StatusFailed, `Could not read "`+x.fpath+`"`, status.Error(err.Error()))
 	}
 
 	result := status.Table{Header: []string{"Directory", "Current", "Required"}}
@@ -147,7 +147,7 @@ func (x *xdgUserDir) apply() bool {
 
 	f, err := os.Create(x.fpath)
 	if err != nil {
-		x.msg(status.StatusFailed, `Could not open "`+x.fpath+`"`, status.Error{Err: err})
+		x.msg(status.StatusFailed, `Could not open "`+x.fpath+`"`, status.Error(err.Error()))
 		return false
 	}
 	defer f.Close()
@@ -160,7 +160,7 @@ func (x *xdgUserDir) apply() bool {
 		if _, err := f.WriteString(
 			"XDG_" + name + `_DIR="` + x.required[name] + "\"\n",
 		); err != nil {
-			x.msg(status.StatusFailed, `Could not write to "`+x.fpath+`"`, status.Error{Err: err})
+			x.msg(status.StatusFailed, `Could not write to "`+x.fpath+`"`, status.Error(err.Error()))
 			return false
 		}
 	}

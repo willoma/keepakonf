@@ -56,25 +56,25 @@ func (f *fileMakeDir) apply() bool {
 	finfo, err := os.Stat(f.path)
 	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of %q", f.path), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not check status of %q", f.path), status.Error(err.Error()))
 			return false
 		}
 
 		ownerUser, err := user.Lookup(f.owner)
 		if err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not get user information for %q", f.owner), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not get user information for %q", f.owner), status.Error(err.Error()))
 			return false
 		}
 
 		if err := os.MkdirAll(f.path, 0o755); err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not create %q", f.path), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not create %q", f.path), status.Error(err.Error()))
 			return false
 		}
 
 		uid, _ := strconv.Atoi(ownerUser.Uid)
 		gid, _ := strconv.Atoi(ownerUser.Gid)
 		if err := os.Chown(f.path, uid, gid); err != nil {
-			f.msg(status.StatusFailed, fmt.Sprintf("Could not change ownership of %q", f.path), status.Error{Err: err})
+			f.msg(status.StatusFailed, fmt.Sprintf("Could not change ownership of %q", f.path), status.Error(err.Error()))
 			return false
 		}
 
