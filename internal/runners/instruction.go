@@ -1,6 +1,7 @@
 package runners
 
 import (
+	"bytes"
 	"encoding/json"
 
 	"github.com/rs/xid"
@@ -8,6 +9,7 @@ import (
 	"github.com/willoma/keepakonf/internal/commands"
 	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
+	"github.com/willoma/keepakonf/internal/variables"
 )
 
 type Instruction struct {
@@ -19,7 +21,8 @@ type Instruction struct {
 	Info   string          `json:"info"`
 	Detail json.RawMessage `json:"detail"`
 
-	command commands.Command
+	command      commands.Command
+	outVariables map[string]string
 
 	group *Group
 }
@@ -44,7 +47,7 @@ func (i *Instruction) Apply() bool {
 	return false
 }
 
-func (i *Instruction) updateStatus(newStatus status.Status, info string, detail status.Detail) {
+func (i *Instruction) updateStatus(newStatus status.Status, info string, detail status.Detail, outVars variables.Variables) {
 	var detailJSON json.RawMessage
 	if detail != nil {
 		detailJSON = status.DetailJSON(detail)
@@ -53,6 +56,7 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 		i.Status = newStatus
 		i.Info = info
 		i.Detail = detailJSON
+		i.outVariables = outVars
 
 		msg := map[string]any{
 			"instruction": i.ID,
@@ -63,7 +67,7 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 			msg["detail"] = detailJSON
 		}
 		i.group.io.Emit("status", msg)
-		i.group.updateStatus()
+		i.group.updateStatusAndVariables()
 	}
 
 	desc := commands.GetDescription(i.Command)
@@ -83,11 +87,27 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 
 	switch newStatus {
 	case i.Status:
-		// When status does not change, log only if info changes
-		if info != i.Info {
+		// When status does not change, only re-emit if info, detail and/or out vars change
+		if info != i.Info || !bytes.Equal(detailJSON, i.Detail) {
 			log()
+			storeAndEmit()
+		} else {
+			var outvarsChanged bool
+			if len(i.outVariables) == len(outVars) {
+				outvarsChanged = true
+			} else {
+				for k, v := range i.outVariables {
+					newValue, ok := outVars[k]
+					if !ok || newValue != v {
+						outvarsChanged = true
+						break
+					}
+				}
+			}
+			if outvarsChanged {
+				storeAndEmit()
+			}
 		}
-		storeAndEmit()
 	case status.StatusFailed:
 		log()
 		storeAndEmit()
@@ -110,7 +130,7 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 	}
 }
 
-func instructionFromMap(iface any, grp *Group) *Instruction {
+func instructionFromMap(iface any, variables map[string]string, grp *Group) *Instruction {
 	mapped, ok := iface.(map[string]any)
 	if !ok {
 		// TODO Send error response to caller
@@ -126,11 +146,12 @@ func instructionFromMap(iface any, grp *Group) *Instruction {
 	parameters, _ := mapped["parameters"].(map[string]any)
 
 	i := &Instruction{
-		ID:         id,
-		Command:    command,
-		Parameters: parameters,
-		group:      grp,
+		ID:           id,
+		Command:      command,
+		Parameters:   parameters,
+		outVariables: map[string]string{},
+		group:        grp,
 	}
-	i.command = commands.Init(command, parameters, i.updateStatus)
+	i.command = commands.Init(command, parameters, variables, i.updateStatus)
 	return i
 }

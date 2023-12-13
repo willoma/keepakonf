@@ -6,6 +6,7 @@ import (
 
 	"github.com/willoma/keepakonf/internal/external"
 	"github.com/willoma/keepakonf/internal/status"
+	"github.com/willoma/keepakonf/internal/variables"
 )
 
 var _ = registerFileWatcher(
@@ -15,40 +16,34 @@ var _ = registerFileWatcher(
 	ParamsDesc{
 		{"path", "File path", ParamTypeFilePath},
 	},
-	func(params map[string]any, msg status.SendStatus) fileWatcherCommand {
+	func(params map[string]any, vars variables.Variables, msg status.SendStatus) fileWatcherCommand {
 		return &fileRemove{
-			path: params["path"].(string),
-			msg:  msg,
+			fileWatcherCmdInit(params, vars, msg),
 		}
 	},
 )
 
 type fileRemove struct {
-	msg  status.SendStatus
-	path string
-}
-
-func (f *fileRemove) getPath() string {
-	return f.path
+	fileWatcherCmd
 }
 
 func (f *fileRemove) newStatus(fstatus external.FileStatus) {
 	switch fstatus {
 	case external.FileStatusDirectory, external.FileStatusFile:
-		f.msg(status.StatusTodo, fmt.Sprintf("Need to remove %q", f.path), nil)
+		f.msg(status.StatusTodo, fmt.Sprintf("Need to remove %q", f.getPath()), nil, nil)
 	case external.FileStatusUnknown:
-		f.msg(status.StatusUnknown, fmt.Sprintf("%q status unknown", f.path), nil)
+		f.msg(status.StatusUnknown, fmt.Sprintf("%q status unknown", f.getPath()), nil, nil)
 	case external.FileStatusNotFound:
-		f.msg(status.StatusApplied, fmt.Sprintf("%q does not exist", f.path), nil)
+		f.msg(status.StatusApplied, fmt.Sprintf("%q does not exist", f.getPath()), nil, nil)
 	}
 }
 
 func (f *fileRemove) apply() bool {
-	if err := os.RemoveAll(f.path); err != nil {
-		f.msg(status.StatusFailed, fmt.Sprintf("Failed removing %q", f.path), status.Error(err.Error()))
+	if err := os.RemoveAll(f.getPath()); err != nil {
+		f.msg(status.StatusFailed, fmt.Sprintf("Failed removing %q", f.getPath()), status.Error(err.Error()), nil)
 		return false
 	}
 
-	f.msg(status.StatusApplied, fmt.Sprintf("%q removed", f.path), nil)
+	f.msg(status.StatusApplied, fmt.Sprintf("%q removed", f.getPath()), nil, nil)
 	return true
 }

@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"github.com/willoma/keepakonf/internal/external"
+	"github.com/willoma/keepakonf/internal/log"
 	"github.com/willoma/keepakonf/internal/status"
+	"github.com/willoma/keepakonf/internal/variables"
 )
 
 const (
@@ -44,16 +46,11 @@ var _ = registerFileWatcher(
 		{"pictures", "Pictures", ParamTypeFilePath},
 		{"videos", "Videos", ParamTypeFilePath},
 	},
-	func(params map[string]any, msg status.SendStatus) fileWatcherCommand {
-		user := params["user"].(string)
-		userData, err := external.GetUser(user)
-		if err != nil {
-			msg(status.StatusFailed, "Could not get user information for "+user, status.Error(err.Error()))
-		}
+	func(params map[string]any, vars variables.Variables, msg status.SendStatus) fileWatcherCommand {
 		return &xdgUserDir{
-			msg:   msg,
-			user:  userData,
-			fpath: filepath.Join(userData.Home, xdgUserDirPath),
+			msg:  msg,
+			vars: vars,
+			user: params["user"].(string),
 			required: map[string]string{
 				"DESKTOP":     params["desktop"].(string),
 				"DOWNLOAD":    params["download"].(string),
@@ -69,16 +66,26 @@ var _ = registerFileWatcher(
 )
 
 type xdgUserDir struct {
-	msg status.SendStatus
+	msg  status.SendStatus
+	vars variables.Variables
 
-	user  external.User
-	fpath string
+	user string
 
 	required map[string]string
 }
 
+func (x *xdgUserDir) updateVariables(vars variables.Variables) (changed bool) {
+	return x.vars.Update(vars)
+}
+
 func (x *xdgUserDir) getPath() string {
-	return x.fpath
+	userData, err := external.GetUser(x.vars.Replace(x.user))
+	if err != nil {
+		log.Errorf(err, "Could not get user information for %q", x.vars.Replace(x.user))
+		return filepath.Join(os.TempDir(), xdgUserDirPath)
+	}
+
+	return filepath.Join(userData.Home, xdgUserDirPath)
 }
 
 func (x *xdgUserDir) newStatus(fstatus external.FileStatus) {
@@ -86,16 +93,21 @@ func (x *xdgUserDir) newStatus(fstatus external.FileStatus) {
 	case external.FileStatusFile:
 		x.msg(x.check())
 	case external.FileStatusDirectory:
-		x.msg(status.StatusFailed, `"`+x.fpath+`" is a directory`, nil)
+		x.msg(status.StatusFailed, `"`+x.getPath()+`" is a directory`, nil, nil)
 	case external.FileStatusNotFound:
-		x.msg(status.StatusFailed, `File "`+x.fpath+`" not found`, nil)
+		x.msg(status.StatusFailed, `File "`+x.getPath()+`" not found`, nil, nil)
 	}
 }
 
-func (x *xdgUserDir) check() (status.Status, string, status.Detail) {
-	f, err := os.Open(x.fpath)
+func (x *xdgUserDir) check() (status.Status, string, status.Detail, variables.Variables) {
+	userData, err := external.GetUser(x.vars.Replace(x.user))
 	if err != nil {
-		return status.StatusFailed, `Could not open "` + x.fpath + "`", status.Error(err.Error())
+		log.Errorf(err, "Could not get user information for %q", x.vars.Replace(x.user))
+	}
+
+	f, err := os.Open(x.getPath())
+	if err != nil {
+		return status.StatusFailed, `Could not open "` + x.getPath() + "`", status.Error(err.Error()), nil
 	}
 	defer f.Close()
 
@@ -108,11 +120,11 @@ func (x *xdgUserDir) check() (status.Status, string, status.Detail) {
 		if len(matches) != 3 {
 			continue
 		}
-		currentConfig[matches[1]] = strings.Replace(strings.TrimRight(matches[2], "/"), "$HOME", x.user.Home, 1)
+		currentConfig[matches[1]] = strings.Replace(strings.TrimRight(matches[2], "/"), "$HOME", userData.Home, 1)
 	}
 
 	if err := scanner.Err(); err != nil {
-		x.msg(status.StatusFailed, `Could not read "`+x.fpath+`"`, status.Error(err.Error()))
+		x.msg(status.StatusFailed, `Could not read "`+x.getPath()+`"`, status.Error(err.Error()), nil)
 	}
 
 	result := status.Table{Header: []string{"Directory", "Current", "Required"}}
@@ -133,21 +145,21 @@ func (x *xdgUserDir) check() (status.Status, string, status.Detail) {
 	}
 
 	if todo {
-		return status.StatusTodo, "Need to change XDG dirs for " + x.user.Name, &result
+		return status.StatusTodo, "Need to change XDG dirs for " + userData.Name, &result, nil
 	}
-	return status.StatusApplied, "XDG dirs for " + x.user.Name + " are as expected", &result
+	return status.StatusApplied, "XDG dirs for " + userData.Name + " are as expected", &result, nil
 }
 
 func (x *xdgUserDir) apply() bool {
-	st, msg, det := x.check()
+	st, msg, det, vars := x.check()
 	if st != status.StatusTodo {
-		x.msg(st, msg, det)
+		x.msg(st, msg, det, vars)
 		return true
 	}
 
-	f, err := os.Create(x.fpath)
+	f, err := os.Create(x.getPath())
 	if err != nil {
-		x.msg(status.StatusFailed, `Could not open "`+x.fpath+`"`, status.Error(err.Error()))
+		x.msg(status.StatusFailed, `Could not open "`+x.getPath()+`"`, status.Error(err.Error()), nil)
 		return false
 	}
 	defer f.Close()
@@ -160,10 +172,13 @@ func (x *xdgUserDir) apply() bool {
 		if _, err := f.WriteString(
 			"XDG_" + name + `_DIR="` + x.required[name] + "\"\n",
 		); err != nil {
-			x.msg(status.StatusFailed, `Could not write to "`+x.fpath+`"`, status.Error(err.Error()))
+			x.msg(status.StatusFailed, `Could not write to "`+x.getPath()+`"`, status.Error(err.Error()), nil)
 			return false
 		}
 	}
-	x.msg(status.StatusApplied, `Applied XDG user paths for `+x.user.Name, nil)
+
+	// TODO change ownership
+
+	x.msg(status.StatusApplied, `Applied XDG user paths for `+x.vars.Replace(x.user), nil, nil)
 	return true
 }

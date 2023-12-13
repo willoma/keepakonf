@@ -6,6 +6,7 @@ import (
 
 	"github.com/willoma/keepakonf/internal/external"
 	"github.com/willoma/keepakonf/internal/status"
+	"github.com/willoma/keepakonf/internal/variables"
 )
 
 var _ = register(
@@ -15,16 +16,18 @@ var _ = register(
 	ParamsDesc{
 		{"packages", "Packages to install", ParamTypeStringArray},
 	},
-	func(params map[string]any, msg status.SendStatus) Command {
+	func(params map[string]any, vars variables.Variables, msg status.SendStatus) Command {
 		return &aptInstall{
 			msg:      msg,
+			vars:     vars,
 			packages: params["packages"].([]string),
 		}
 	},
 )
 
 type aptInstall struct {
-	msg status.SendStatus
+	msg  status.SendStatus
+	vars variables.Variables
 
 	packages []string
 
@@ -32,6 +35,12 @@ type aptInstall struct {
 
 	applying atomic.Bool
 	close    func()
+}
+
+func (a *aptInstall) UpdateVariables(vars variables.Variables) {
+	if a.vars.Update(vars) {
+		a.update(external.DpkgPackages())
+	}
 }
 
 func (a *aptInstall) Watch() {
@@ -55,7 +64,9 @@ func (a *aptInstall) update(knownPackages map[string]external.DpkgPackage) {
 		Header: []string{"Package", "Status", "Version"},
 	}
 
-	for _, pkg := range a.packages {
+	pkgs := a.vars.ReplaceSlice(a.packages)
+
+	for _, pkg := range pkgs {
 		if pkg == "" {
 			continue
 		}
@@ -88,15 +99,15 @@ func (a *aptInstall) update(knownPackages map[string]external.DpkgPackage) {
 	if len(needToInstall) > 0 {
 		msgStatus = msgStatus.IfHigherPriority(status.StatusTodo)
 		info = "Need to install " + strings.Join(needToInstall, ", ")
-	} else if len(a.packages) == 1 {
-		info = "Package " + a.packages[0] + " installed"
+	} else if len(pkgs) == 1 {
+		info = "Package " + pkgs[0] + " installed"
 	} else {
-		info = "Packages " + strings.Join(a.packages, ", ") + " installed"
+		info = "Packages " + strings.Join(pkgs, ", ") + " installed"
 	}
 
 	a.needToInstall = needToInstall
 	if !a.applying.Load() {
-		a.msg(msgStatus, info, &table)
+		a.msg(msgStatus, info, &table, nil)
 	}
 }
 
@@ -113,10 +124,20 @@ func (a *aptInstall) Apply() bool {
 	defer a.applying.Store(false)
 
 	return external.AptGet(
-		"Installing "+needToInstallMsg,
-		"Successfully installed "+needToInstallMsg,
-		"Failed installing "+needToInstallMsg,
-		a.msg,
+		func(s status.Status, info string, detail status.Detail) {
+			if info == "" {
+				switch s {
+				case status.StatusRunning:
+					info = "Installing " + needToInstallMsg
+				case status.StatusApplied:
+					info = "Successfully installed " + needToInstallMsg
+				case status.StatusFailed:
+					info = "Failed installing " + needToInstallMsg
+				}
+
+			}
+			a.msg(s, info, detail, nil)
+		},
 		"install", a.needToInstall,
 	)
 }

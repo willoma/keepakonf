@@ -14,8 +14,7 @@ import (
 // }
 
 func execToMessage(
-	runningInfo, successInfo, failureInfo string,
-	send status.SendStatus,
+	receiver func(status.Status, string, status.Detail),
 	env []string, cmd string, args ...string,
 ) bool {
 	var cmdline strings.Builder
@@ -43,13 +42,13 @@ func execToMessage(
 	c := exec.Command(cmd, args...)
 	c.Env = append(os.Environ(), "LANG=C.UTF-8")
 	c.Env = append(c.Env, env...)
-	w := newSendWriter(runningInfo, send, cmdline.String())
+	w := newSendWriter(receiver, cmdline.String())
 	c.Stdout = w
 	c.Stderr = w
 	if err := c.Run(); err != nil {
-		send(
+		receiver(
 			status.StatusFailed,
-			failureInfo,
+			"",
 			&status.Terminal{
 				Command: cmdline.String(),
 				Output:  w.Result(),
@@ -57,9 +56,9 @@ func execToMessage(
 		)
 		return false
 	}
-	send(
+	receiver(
 		status.StatusApplied,
-		successInfo,
+		"",
 		&status.Terminal{
 			Command: cmdline.String(),
 			Output:  w.Result(),

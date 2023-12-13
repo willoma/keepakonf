@@ -10,16 +10,14 @@ type sendTerminalWriter struct {
 	cmdline    string
 	lineBuffer []byte
 	result     strings.Builder
-	info       string
-	send       status.SendStatus
+	receiver   func(status.Status, string, status.Detail)
 }
 
-func newSendWriter(info string, send status.SendStatus, cmdline string) *sendTerminalWriter {
+func newSendWriter(receiver func(status.Status, string, status.Detail), cmdline string) *sendTerminalWriter {
 	return &sendTerminalWriter{
 		cmdline:    cmdline,
 		lineBuffer: make([]byte, 0, 80),
-		info:       info,
-		send:       send,
+		receiver:   receiver,
 	}
 }
 
@@ -37,9 +35,9 @@ func (w *sendTerminalWriter) Write(p []byte) (n int, err error) {
 			}
 			w.lineBuffer = w.lineBuffer[:0]
 
-			w.send(
+			w.receiver(
 				status.StatusRunning,
-				w.info,
+				"",
 				&status.Terminal{
 					Command: w.cmdline,
 					Output:  w.result.String(),

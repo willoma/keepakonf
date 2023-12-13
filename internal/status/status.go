@@ -1,5 +1,7 @@
 package status
 
+import "github.com/willoma/keepakonf/internal/variables"
+
 type Status string
 
 const (
@@ -27,4 +29,4 @@ func (s Status) IfHigherPriority(newS Status) Status {
 	return newS
 }
 
-type SendStatus func(newStatus Status, info string, detail Detail)
+type SendStatus func(newStatus Status, info string, detail Detail, outVariables variables.Variables)

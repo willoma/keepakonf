@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/willoma/keepakonf/internal/external"
 	"github.com/willoma/keepakonf/internal/log"
+	"github.com/willoma/keepakonf/internal/variables"
 )
 
 func (c *client) users(a ...any) {
@@ -14,5 +15,5 @@ func (c *client) users(a ...any) {
 }
 
 func (c *client) globalVariables(a ...any) {
-	callback(a, external.GlobalVariables)
+	callback(a, variables.Global)
 }
