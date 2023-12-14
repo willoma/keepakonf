@@ -51,6 +51,10 @@ export function makefield(param, initial) {
 	case "[string]":
 		value =  initial?[...initial]:[""]
 		validators = [required()]
+	break
+	case "text":
+		value = initial??""
+		validators = [required()]
 		break
 	case "username":
 		value = initial??""

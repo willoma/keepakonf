@@ -2,7 +2,7 @@
 	export let param
 	export let field
 
-	import { Bool, Filepath, String, StringArray, Username } from "./parameter"
+	import { Bool, Filepath, String, StringArray, Text, Username } from "./parameter"
 
 	$: label = param?.title ?? "Unknown"
 </script>
@@ -15,6 +15,8 @@
 	<String {field} {label} />
 {:else if param.type === "[string]"}
 	<StringArray {field} {label} />
+{:else if param.type === "text"}
+	<Text {field} {label} />
 {:else if param.type === "username"}
 	<Username {field} {label} />
 {:else}

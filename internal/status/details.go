@@ -62,3 +62,18 @@ type Terminal struct {
 func (t *Terminal) DetailType() string {
 	return "terminal"
 }
+
+type Text string
+
+func (t Text) DetailType() string {
+	return "text"
+}
+
+type TextDiff struct {
+	Before string `json:"b"`
+	After  string `json:"a"`
+}
+
+func (t TextDiff) DetailType() string {
+	return "textdiff"
+}

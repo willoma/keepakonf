@@ -13,7 +13,7 @@
 		{#if $field.value}
 			<Icon icon="check" />
 		{:else}
-		<span class="icon" />
+			<span class="icon" />
 		{/if}
 	</button>
 </Field>

@@ -1,6 +1,7 @@
 export { default as Button } from "./Button.svelte"
 export { default as ButtonA } from "./ButtonA.svelte"
 export { default as Buttons } from "./Buttons.svelte"
+export { default as ChoicesButtons } from "./ChoicesButtons.svelte"
 export { default as Field } from "./Field.svelte"
 export { default as Icon } from "./Icon.svelte"
 export { default as Title } from "./Title.svelte"

@@ -7,6 +7,7 @@ const (
 	ParamTypeFilePath    ParamType = "filepath"
 	ParamTypeString      ParamType = "string"
 	ParamTypeStringArray ParamType = "[string]"
+	ParamTypeText        ParamType = "text"
 	ParamTypeUsername    ParamType = "username"
 )
 
@@ -18,7 +19,7 @@ type ParamDesc struct {
 
 type ParamsDesc []ParamDesc
 
-func (p ParamsDesc) EnsureTyped(src map[string]any) {
+func (p ParamsDesc) ensureTyped(src map[string]any) {
 	if src == nil {
 		src = map[string]any{}
 	}
@@ -41,7 +42,7 @@ func (p ParamDesc) extractTyped(src map[string]any) any {
 		}
 		return b
 
-	case ParamTypeFilePath, ParamTypeString, ParamTypeUsername:
+	case ParamTypeFilePath, ParamTypeString, ParamTypeText, ParamTypeUsername:
 		if !ok {
 			return ""
 		}
