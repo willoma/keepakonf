@@ -18,7 +18,6 @@
 			}
 		}, 5000)
 	}
-	
 
 	let filter = ""
 </script>
