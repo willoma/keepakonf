@@ -1,7 +1,5 @@
 <script>
 	import "../app.scss"
-	import "@fortawesome/fontawesome-free/css/fontawesome.css"
-	import "@fortawesome/fontawesome-free/css/solid.css"
 
 	import { page } from '$app/stores'
 
