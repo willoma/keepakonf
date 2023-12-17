@@ -71,7 +71,7 @@ func (a *aptRemove) update(knownPackages map[string]external.DpkgPackage) {
 
 	msgStatus := status.StatusApplied
 	table := status.Table{
-		Header: []string{"Package", "Status", "Version"},
+		Header: []string{"Package", "Installed version"},
 	}
 	pkgs := a.vars.ReplaceSlice(a.packages)
 
@@ -84,21 +84,18 @@ func (a *aptRemove) update(knownPackages map[string]external.DpkgPackage) {
 		case !ok:
 			table.AppendRow(
 				status.TableCell{Status: status.StatusNone, Content: pkg},
-				status.TableCell{Status: status.StatusApplied, Content: "not installed"},
-				status.TableCell{Status: status.StatusNone, Content: ""},
+				status.TableCell{Status: status.StatusApplied, Content: "None"},
 			)
 		case info.Installed:
 			needToRemove = append(needToRemove, pkg)
 			table.AppendRow(
 				status.TableCell{Status: status.StatusNone, Content: pkg},
-				status.TableCell{Status: status.StatusTodo, Content: "installed"},
-				status.TableCell{Status: status.StatusNone, Content: info.Version},
+				status.TableCell{Status: status.StatusTodo, Content: info.Version},
 			)
 		default:
 			table.AppendRow(
 				status.TableCell{Status: status.StatusNone, Content: pkg},
-				status.TableCell{Status: status.StatusApplied, Content: "not installed"},
-				status.TableCell{Status: status.StatusNone, Content: info.Version},
+				status.TableCell{Status: status.StatusApplied, Content: "None"},
 			)
 		}
 	}
