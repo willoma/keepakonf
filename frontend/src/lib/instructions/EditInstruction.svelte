@@ -41,10 +41,12 @@
 </script>
 
 <div class="box p-2">
-	<Button class="is-warning is-small is-pulled-right" icon="remove" on:click={() => dispatch("remove")}>Remove</Button>
-	<Icon icon={cmd?.icon??"command"} tclass="block mb-1">
-		<b>{initial.command}</b>: {cmd?.description ?? "Unknown"}
-	</Icon>
+	<div class="is-flex" class:mb-3={cmd?.parameters?.length}>
+		<Icon icon={cmd?.icon??"command"} tclass="is-flex-grow-1">
+			<b>{initial.command}</b>: {cmd?.description ?? "Unknown"}
+		</Icon>
+		<Button class="is-warning is-small is-flex-grow-0" icon="remove" on:click={() => dispatch("remove")}>Remove</Button>
+	</div>
 	{#if ready}
 		{#each cmd?.parameters ?? [] as param, i}
 			<EditParameter {param} field={parametersFields[i]} />
