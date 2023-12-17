@@ -97,62 +97,62 @@ func (a *aptCacheWatcher) updatePackagesList(knownPackages map[string]DpkgPackag
 
 	packages := map[string]DpkgPackage{}
 
-		var (
-			pkg     string
-			version string
-		)
+	var (
+		pkg     string
+		version string
+	)
 
-		buf := []byte{}
-		scanner := bufio.NewScanner(reader)
-		scanner.Buffer(buf, aptUpdateScannerBufferLength)
-		for scanner.Scan() {
-			line := strings.TrimSpace(scanner.Text())
+	buf := []byte{}
+	scanner := bufio.NewScanner(reader)
+	scanner.Buffer(buf, aptUpdateScannerBufferLength)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
 
-			if line == "" {
-				// End of record, compare it and store it
-				if pkg != "" {
-					pkgObj := DpkgPackage{
-						Name:             pkg,
-						AvailableVersion: version,
-					}
-					known, ok := knownPackages[pkg]
+		if line == "" {
+			// End of record, compare it and store it
+			if pkg != "" {
+				pkgObj := DpkgPackage{
+					Name:             pkg,
+					AvailableVersion: version,
+				}
+				known, ok := knownPackages[pkg]
 				if ok {
 					if known.Installed {
 						pkgObj.Version = known.Version
 						pkgObj.Installed = true
 					}
 					delete(knownPackages, pkg)
-					}
-					if _, ok := packages[pkg]; !ok || packages[pkg].AvailableVersion < pkgObj.AvailableVersion {
-						packages[pkg] = pkgObj
-					}
 				}
-
-				pkg = ""
-				version = ""
-				continue
+				if _, ok := packages[pkg]; !ok || packages[pkg].AvailableVersion < pkgObj.AvailableVersion {
+					packages[pkg] = pkgObj
+				}
 			}
 
-			info := strings.SplitN(line, ": ", 2)
-			if len(info) != 2 {
-				continue
-			}
-
-			switch info[0] {
-			case "Package":
-				pkg = info[1]
-			case "Version":
-				version = info[1]
-			}
+			pkg = ""
+			version = ""
+			continue
 		}
+
+		info := strings.SplitN(line, ": ", 2)
+		if len(info) != 2 {
+			continue
+		}
+
+		switch info[0] {
+		case "Package":
+			pkg = info[1]
+		case "Version":
+			version = info[1]
+		}
+	}
 
 	for name, info := range knownPackages {
 		packages[name] = info
 	}
 
-		if err := scanner.Err(); err != nil {
-			slog.Error("err", "error", err)
-		}
+	if err := scanner.Err(); err != nil {
+		slog.Error("err", "error", err)
+	}
 
 	if err := cmd.Wait(); err != nil {
 		log.Error(err, "Could not read information from apt cache")
@@ -184,7 +184,12 @@ func (a *aptCacheWatcher) updatePackagesList(knownPackages map[string]DpkgPackag
 }
 
 func (a *aptCacheWatcher) listen() (target <-chan map[string]DpkgPackage, remove func()) {
-	targetChan := make(chan map[string]DpkgPackage)
+	targetChan := make(chan map[string]DpkgPackage, 2)
+
+	a.packagesMu.Lock()
+	targetChan <- a.packages
+	a.packagesMu.Unlock()
+
 	a.receiversMu.Lock()
 	a.receivers[targetChan] = struct{}{}
 	a.receiversMu.Unlock()
@@ -198,7 +203,12 @@ func (a *aptCacheWatcher) listen() (target <-chan map[string]DpkgPackage, remove
 }
 
 func (a *aptCacheWatcher) listenList() (target <-chan []DpkgPackage, remove func()) {
-	targetChan := make(chan []DpkgPackage)
+	targetChan := make(chan []DpkgPackage, 2)
+
+	a.packagesMu.Lock()
+	targetChan <- a.packagesList
+	a.packagesMu.Unlock()
+
 	a.receiversMu.Lock()
 	a.receiversList[targetChan] = struct{}{}
 	a.receiversMu.Unlock()
@@ -209,6 +219,12 @@ func (a *aptCacheWatcher) listenList() (target <-chan []DpkgPackage, remove func
 		a.receiversMu.Unlock()
 		close(targetChan)
 	}
+}
+
+func (a *aptCacheWatcher) listPackages() map[string]DpkgPackage {
+	a.packagesMu.Lock()
+	defer a.packagesMu.Unlock()
+	return a.packages
 }
 
 func initAptCacheWatcher() {

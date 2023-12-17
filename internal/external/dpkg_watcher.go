@@ -158,7 +158,12 @@ func (d *dpkgWatcher) scan() {
 }
 
 func (d *dpkgWatcher) listen() (target <-chan map[string]DpkgPackage, remove func()) {
-	targetChan := make(chan map[string]DpkgPackage)
+	targetChan := make(chan map[string]DpkgPackage, 2)
+
+	d.packagesMu.Lock()
+	targetChan <- d.packages
+	d.packagesMu.Unlock()
+
 	d.receiversMu.Lock()
 	d.receivers[targetChan] = struct{}{}
 	d.receiversMu.Unlock()

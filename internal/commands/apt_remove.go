@@ -56,8 +56,6 @@ func (a *aptRemove) Watch() {
 	signals, close := external.DpkgListen()
 	a.close = close
 
-	a.update(external.DpkgPackages())
-
 	go func() {
 		for knownPackages := range signals {
 			a.update(knownPackages)

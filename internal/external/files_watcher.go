@@ -265,13 +265,9 @@ func (m *fileWatcherMiddle) addTarget() chan FileStatus {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	target := make(chan FileStatus)
+	target := make(chan FileStatus, 2)
+	target <- m.val
 	m.out = append(m.out, target)
-
-	latestValue := m.val
-	go func() {
-		target <- latestValue
-	}()
 
 	return target
 }
