@@ -11,6 +11,7 @@ import (
 type Group struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	Icon string `json:"icon,omitempty"`
 
 	Instructions []*Instruction `json:"instructions"`
 
@@ -112,10 +113,11 @@ func GroupFromMap(iface any, io socket.NamespaceInterface) *Group {
 	}
 
 	name, _ := mapped["name"].(string)
-
+	icon, _ := mapped["icon"].(string)
 	grp := &Group{
 		ID:     id,
 		Name:   name,
+		Icon:   icon,
 		Status: status.StatusUnknown,
 		io:     io,
 	}

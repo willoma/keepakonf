@@ -21,7 +21,7 @@ import ubuntu from "@fortawesome/fontawesome-free/svgs/brands/ubuntu.svg?raw"
 import unknown from "@fortawesome/fontawesome-free/svgs/solid/question.svg?raw"
 import variable from "@fortawesome/fontawesome-free/svgs/solid/code.svg?raw"
 
-const icons = {
+export const icons = {
 	add,
 	cancel,
 	check,

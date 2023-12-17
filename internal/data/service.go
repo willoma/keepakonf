@@ -101,6 +101,7 @@ func (d *Data) doSave() {
 		dst[i] = map[string]any{
 			"id":           grp.ID,
 			"name":         grp.Name,
+			"icon":         grp.Icon,
 			"instructions": instructionsClone,
 		}
 	}
