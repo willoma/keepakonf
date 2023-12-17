@@ -62,7 +62,7 @@ func write(
 
 	records = append(records, jsonRec)
 	if io != nil {
-		io.Emit("log", jsonRec)
+		io.Emit("log", json.RawMessage(jsonRec))
 	}
 }
 
