@@ -2,7 +2,6 @@ package commands
 
 import (
 	"sync/atomic"
-	"time"
 
 	"github.com/willoma/keepakonf/internal/external"
 	"github.com/willoma/keepakonf/internal/status"
@@ -26,10 +25,8 @@ type aptUpgrade struct {
 	msg  status.SendStatus
 	vars variables.Variables
 
-	applying  atomic.Bool
-	close     func()
-	closeChan chan struct{}
-	ticker    *time.Ticker
+	applying atomic.Bool
+	close    func()
 }
 
 func (a *aptUpgrade) UpdateVariables(vars variables.Variables) {
@@ -79,10 +76,6 @@ func (a *aptUpgrade) Stop() {
 	if a.close != nil {
 		a.close()
 	}
-	if a.ticker != nil {
-		a.ticker.Stop()
-	}
-	a.closeChan <- struct{}{}
 }
 
 func (a *aptUpgrade) Apply() bool {
@@ -104,6 +97,6 @@ func (a *aptUpgrade) Apply() bool {
 			}
 			a.msg(s, info, detail, nil)
 		},
-		"upgrade",
+		"dist-upgrade",
 	)
 }
