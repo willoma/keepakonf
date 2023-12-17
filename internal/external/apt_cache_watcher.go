@@ -235,3 +235,10 @@ func AptCacheListenList() (target <-chan []DpkgPackage, remove func()) {
 
 	return aptCacheWatcherRunner.listenList()
 }
+
+// AptCachePackages returns the list of known packages and their potential update once.
+func AptCachePackages() map[string]DpkgPackage {
+	initAptCacheWatcher()
+
+	return aptCacheWatcherRunner.listPackages()
+}

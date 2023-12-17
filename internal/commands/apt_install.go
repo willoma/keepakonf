@@ -39,15 +39,13 @@ type aptInstall struct {
 
 func (a *aptInstall) UpdateVariables(vars variables.Variables) {
 	if a.vars.Update(vars) {
-		a.update(external.DpkgPackages())
+		a.update(external.AptCachePackages())
 	}
 }
 
 func (a *aptInstall) Watch() {
-	signals, close := external.DpkgListen()
+	signals, close := external.AptCacheListen()
 	a.close = close
-
-	a.update(external.DpkgPackages())
 
 	go func() {
 		for knownPackages := range signals {
@@ -58,10 +56,11 @@ func (a *aptInstall) Watch() {
 
 func (a *aptInstall) update(knownPackages map[string]external.DpkgPackage) {
 	needToInstall := []string{}
+	unknown := []string{}
 
 	msgStatus := status.StatusApplied
 	table := status.Table{
-		Header: []string{"Package", "Status", "Version"},
+		Header: []string{"Package", "Installed Version", "Available Version"},
 	}
 
 	pkgs := a.vars.ReplaceSlice(a.packages)
@@ -73,30 +72,49 @@ func (a *aptInstall) update(knownPackages map[string]external.DpkgPackage) {
 		info, ok := knownPackages[pkg]
 		switch {
 		case !ok:
-			needToInstall = append(needToInstall, pkg)
+			unknown = append(unknown, pkg)
 			table.AppendRow(
 				status.TableCell{Status: status.StatusNone, Content: pkg},
-				status.TableCell{Status: status.StatusUnknown, Content: "not installed"},
-				status.TableCell{Status: status.StatusNone, Content: ""},
+				status.TableCell{Status: status.StatusFailed, Content: "None"},
+				status.TableCell{Status: status.StatusNone, Content: "Unknown"},
 			)
 		case info.Installed:
-			table.AppendRow(
-				status.TableCell{Status: status.StatusNone, Content: pkg},
-				status.TableCell{Status: status.StatusApplied, Content: "installed"},
-				status.TableCell{Status: status.StatusNone, Content: info.Version},
-			)
+			switch {
+			case info.AvailableVersion == "":
+				table.AppendRow(
+					status.TableCell{Status: status.StatusNone, Content: pkg},
+					status.TableCell{Status: status.StatusApplied, Content: info.Version},
+					status.TableCell{Status: status.StatusNone, Content: "None"},
+				)
+			case info.Version == info.AvailableVersion:
+				table.AppendRow(
+					status.TableCell{Status: status.StatusNone, Content: pkg},
+					status.TableCell{Status: status.StatusApplied, Content: info.Version},
+					status.TableCell{Status: status.StatusNone, Content: info.AvailableVersion},
+				)
+			default:
+				needToInstall = append(needToInstall, pkg)
+				table.AppendRow(
+					status.TableCell{Status: status.StatusNone, Content: pkg},
+					status.TableCell{Status: status.StatusTodo, Content: info.Version},
+					status.TableCell{Status: status.StatusNone, Content: info.AvailableVersion},
+				)
+			}
 		default:
 			needToInstall = append(needToInstall, pkg)
 			table.AppendRow(
 				status.TableCell{Status: status.StatusNone, Content: pkg},
-				status.TableCell{Status: status.StatusUnknown, Content: "not installed"},
-				status.TableCell{Status: status.StatusNone, Content: info.Version},
+				status.TableCell{Status: status.StatusTodo, Content: "None"},
+				status.TableCell{Status: status.StatusNone, Content: info.AvailableVersion},
 			)
 		}
 	}
 
 	var info string
-	if len(needToInstall) > 0 {
+	if len(unknown) > 0 {
+		msgStatus = status.StatusFailed
+		info = strings.Join(needToInstall, ", ") + "unknown"
+	} else if len(needToInstall) > 0 {
 		msgStatus = status.StatusTodo
 		info = "Need to install " + strings.Join(needToInstall, ", ")
 	} else if len(pkgs) == 1 {
