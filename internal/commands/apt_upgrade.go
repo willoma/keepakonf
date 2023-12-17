@@ -51,7 +51,7 @@ func (a *aptUpgrade) Watch() {
 			var needToUpgrade bool
 
 			for _, pkg := range packages {
-				if !pkg.Installed || pkg.Version == pkg.AvailableVersion {
+				if !pkg.Installed || pkg.Version == pkg.AvailableVersion || pkg.AvailableVersion == "" {
 					continue
 				}
 

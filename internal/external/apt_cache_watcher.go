@@ -97,7 +97,6 @@ func (a *aptCacheWatcher) updatePackagesList(knownPackages map[string]DpkgPackag
 
 	packages := map[string]DpkgPackage{}
 
-	go func() {
 		var (
 			pkg     string
 			version string
@@ -117,9 +116,12 @@ func (a *aptCacheWatcher) updatePackagesList(knownPackages map[string]DpkgPackag
 						AvailableVersion: version,
 					}
 					known, ok := knownPackages[pkg]
-					if ok && known.Installed {
+				if ok {
+					if known.Installed {
 						pkgObj.Version = known.Version
 						pkgObj.Installed = true
+					}
+					delete(knownPackages, pkg)
 					}
 					if _, ok := packages[pkg]; !ok || packages[pkg].AvailableVersion < pkgObj.AvailableVersion {
 						packages[pkg] = pkgObj
@@ -144,10 +146,13 @@ func (a *aptCacheWatcher) updatePackagesList(knownPackages map[string]DpkgPackag
 			}
 		}
 
+	for name, info := range knownPackages {
+		packages[name] = info
+	}
+
 		if err := scanner.Err(); err != nil {
 			slog.Error("err", "error", err)
 		}
-	}()
 
 	if err := cmd.Wait(); err != nil {
 		log.Error(err, "Could not read information from apt cache")
@@ -224,7 +229,7 @@ func AptCacheListen() (target <-chan map[string]DpkgPackage, remove func()) {
 	return aptCacheWatcherRunner.listen()
 }
 
-// AptCacheListen returns the list of known packages and their potential update whenever it changes.
+// AptCacheListenList returns the list of known packages and their potential update whenever it changes.
 func AptCacheListenList() (target <-chan []DpkgPackage, remove func()) {
 	initAptCacheWatcher()
 
