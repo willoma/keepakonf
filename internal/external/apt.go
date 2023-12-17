@@ -1,17 +1,13 @@
 package external
 
 import (
-	"sync"
-
 	"github.com/willoma/keepakonf/internal/status"
 )
-
-var dpkgMu sync.Mutex
 
 func AptGet(
 	receiver func(status.Status, string, status.Detail),
 	cmd string,
-	packages []string,
+	args ...string,
 ) bool {
 	if !dpkgMu.TryLock() {
 		// Try locking only to send the message if the mutex cannot be locked
@@ -26,6 +22,6 @@ func AptGet(
 		receiver,
 		[]string{"DEBIAN_FRONTEND=noninteractive"},
 		"apt-get",
-		append([]string{"--yes", "--quiet", cmd}, packages...)...,
+		append([]string{"--yes", "--quiet", cmd}, args...)...,
 	)
 }

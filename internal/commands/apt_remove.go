@@ -146,6 +146,6 @@ func (a *aptRemove) Apply() bool {
 			}
 			a.msg(s, info, detail, nil)
 		},
-		a.cmd, a.needToRemove,
+		a.cmd, a.needToRemove...,
 	)
 }

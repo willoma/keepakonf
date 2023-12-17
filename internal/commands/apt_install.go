@@ -138,6 +138,6 @@ func (a *aptInstall) Apply() bool {
 			}
 			a.msg(s, info, detail, nil)
 		},
-		"install", a.needToInstall,
+		"install", a.needToInstall...,
 	)
 }

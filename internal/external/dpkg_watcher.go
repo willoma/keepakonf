@@ -18,11 +18,6 @@ const (
 	dpkgWatcherDedupDelay = 100 * time.Millisecond
 )
 
-type DpkgPackage struct {
-	Installed bool
-	Version   string
-}
-
 type dpkgWatcher struct {
 	receivers   map[chan<- map[string]DpkgPackage]struct{}
 	receiversMu sync.Mutex
@@ -114,8 +109,10 @@ func (d *dpkgWatcher) scan() {
 		line := strings.TrimSpace(scanner.Text())
 
 		if line == "" {
+			// End of record, store it
 			if pkg != "" {
 				packages[pkg] = DpkgPackage{
+					Name:      pkg,
 					Version:   version,
 					Installed: installed,
 				}
@@ -123,6 +120,7 @@ func (d *dpkgWatcher) scan() {
 			installed = false
 			pkg = ""
 			version = ""
+			continue
 		}
 
 		info := strings.SplitN(line, ": ", 2)
