@@ -2,15 +2,13 @@ package data
 
 import "github.com/willoma/keepakonf/internal/runners"
 
-func (d *Data) GetInstruction(id string) *runners.Instruction {
+func (d *Data) GetInstruction(id string) (runners.Instruction, bool) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	for _, grp := range d.groups {
-		for _, ins := range grp.Instructions {
-			if id == ins.ID {
-				return ins
-			}
+		if ins, ok := grp.GetInstruction(id); ok {
+			return ins, true
 		}
 	}
-	return nil
+	return nil, false
 }

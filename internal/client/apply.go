@@ -29,9 +29,7 @@ func (c *client) applyInstruction(a ...any) {
 		return
 	}
 
-	instruction := c.data.GetInstruction(instructionID)
-	if instruction == nil {
-		return
+	if instruction, ok := c.data.GetInstruction(instructionID); ok {
+		instruction.Apply()
 	}
-	instruction.Apply()
 }

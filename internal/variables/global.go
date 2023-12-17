@@ -8,31 +8,31 @@ import (
 )
 
 var (
-	globalMap map[string]string
+	globalMap Variables
 	Global    []Variable
 )
 
 func init() {
+	globalMap = Variables{}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		slog.Error("Could not get hostname", "error", err)
 	}
+	globalMap.Define("hostname", hostname)
 
 	lsbRelease, err := exec.Command("lsb_release", "--codename", "--short").Output()
 	if err != nil {
 		slog.Error("Could not get distribution codename", "error", err)
 	}
+	globalMap.Define("oscodename", string(bytes.TrimSpace(lsbRelease)))
 
 	distro, err := exec.Command("lsb_release", "--id", "--short").Output()
 	if err != nil {
 		slog.Error("Could not get distribution name", "error", err)
 	}
+	globalMap.Define("osdistribution", string(bytes.TrimSpace(distro)))
 
-	globalMap = map[string]string{
-		"hostname":       hostname,
-		"oscodename":     string(bytes.TrimSpace(lsbRelease)),
-		"osdistribution": string(bytes.TrimSpace(distro)),
-	}
 	Global = []Variable{
 		{
 			Name:        "hostname",
@@ -53,9 +53,5 @@ func init() {
 }
 
 func GlobalMap() Variables {
-	gvm := make(Variables, len(globalMap))
-	for k, v := range globalMap {
-		gvm.Define(k, v)
-	}
-	return gvm
+	return globalMap.Clone()
 }

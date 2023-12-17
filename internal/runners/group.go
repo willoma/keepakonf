@@ -13,11 +13,24 @@ type Group struct {
 	Name string `json:"name"`
 	Icon string `json:"icon,omitempty"`
 
-	Instructions []*Instruction `json:"instructions"`
+	Instructions []Instruction `json:"instructions"`
 
 	Status status.Status `json:"status"`
 
 	io socket.NamespaceInterface
+}
+
+func (g *Group) ExtractSaveable() map[string]any {
+	instructionsClone := make([]any, len(g.Instructions))
+	for i, ins := range g.Instructions {
+		instructionsClone[i] = ins.extractSaveable()
+	}
+	return map[string]any{
+		"id":           g.ID,
+		"name":         g.Name,
+		"icon":         g.Icon,
+		"instructions": instructionsClone,
+	}
 }
 
 func (g *Group) Watch() {
@@ -33,14 +46,20 @@ func (g *Group) StopWatch() {
 }
 
 func (g *Group) Apply() {
-	for _, i := range g.Instructions {
-		if i.Status == status.StatusApplied {
-			continue
-		}
-		if !i.Apply() {
+	for _, ins := range g.Instructions {
+		if !ins.Apply() {
 			return
 		}
 	}
+}
+
+func (g *Group) GetInstruction(id string) (Instruction, bool) {
+	for _, i := range g.Instructions {
+		if ins, ok := i.getInstruction(id); ok {
+			return ins, true
+		}
+	}
+	return nil, false
 }
 
 func (g *Group) updateStatusAndVariables() {
@@ -54,7 +73,7 @@ func (g *Group) updateStatusAndVariables() {
 	)
 
 	for _, ins := range g.Instructions {
-		switch ins.Status {
+		switch ins.getStatus() {
 		case status.StatusRunning:
 			instructionRunning = true
 		case status.StatusTodo:
@@ -71,9 +90,9 @@ func (g *Group) updateStatusAndVariables() {
 			instructionUnknown = true
 		}
 
-		ins.command.UpdateVariables(vars)
-		for k, v := range ins.outVariables {
-			vars.Define(k, v)
+		ins.updateVariables(vars)
+		for k, v := range ins.getOutVariables() {
+			vars[k] = v
 		}
 	}
 
@@ -125,10 +144,12 @@ func GroupFromMap(iface any, io socket.NamespaceInterface) *Group {
 	vars := variables.GlobalMap()
 
 	instructionsIfaces, _ := mapped["instructions"].([]any)
-	instructions := make([]*Instruction, len(instructionsIfaces))
-	for i, ins := range instructionsIfaces {
+	instructions := make([]Instruction, 0, len(instructionsIfaces))
+	for _, ins := range instructionsIfaces {
 		instruction := instructionFromMap(ins, vars, grp)
-		instructions[i] = instruction
+		if instruction != nil {
+			instructions = append(instructions, instruction)
+		}
 	}
 
 	grp.Instructions = instructions

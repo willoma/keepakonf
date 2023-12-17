@@ -28,6 +28,14 @@ func (v Variables) ReplaceSlice(src []string) []string {
 	return replaced
 }
 
+func (v Variables) Clone() Variables {
+	newV := make(map[string]string, len(v))
+	for key, value := range v {
+		newV[key] = value
+	}
+	return newV
+}
+
 func (v Variables) Update(newV Variables) (changed bool) {
 	for k := range v {
 		if _, ok := newV[k]; !ok {

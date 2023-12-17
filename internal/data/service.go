@@ -86,24 +86,7 @@ func (d *Data) doSave() {
 	d.mu.Lock()
 	dst := make([]any, len(d.groups))
 	for i, grp := range d.groups {
-		instructionsClone := make([]any, len(grp.Instructions))
-		for j, ins := range grp.Instructions {
-			paramsClone := make(map[string]any, len(ins.Parameters))
-			for k, v := range ins.Parameters {
-				paramsClone[k] = v
-			}
-			instructionsClone[j] = map[string]any{
-				"id":         ins.ID,
-				"command":    ins.Command,
-				"parameters": paramsClone,
-			}
-		}
-		dst[i] = map[string]any{
-			"id":           grp.ID,
-			"name":         grp.Name,
-			"icon":         grp.Icon,
-			"instructions": instructionsClone,
-		}
+		dst[i] = grp.ExtractSaveable()
 	}
 	d.mu.Unlock()
 
