@@ -17,6 +17,7 @@ import remove from "@fortawesome/fontawesome-free/svgs/solid/trash-can.svg?raw"
 import run from "@fortawesome/fontawesome-free/svgs/solid/gears.svg?raw"
 import save from "@fortawesome/fontawesome-free/svgs/solid/floppy-disk.svg?raw"
 import search from "@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?raw"
+import ubuntu from "@fortawesome/fontawesome-free/svgs/brands/ubuntu.svg?raw"
 import unknown from "@fortawesome/fontawesome-free/svgs/solid/question.svg?raw"
 import variable from "@fortawesome/fontawesome-free/svgs/solid/code.svg?raw"
 
@@ -40,6 +41,7 @@ const icons = {
 	run,
 	save,
 	search,
+	ubuntu,
 	unknown,
 	variable,
 }
