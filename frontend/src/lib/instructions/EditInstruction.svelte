@@ -42,7 +42,7 @@
 
 <div class="box p-2">
 	<Button class="is-warning is-small is-pulled-right" icon="remove" on:click={() => dispatch("remove")}>Remove</Button>
-	<Icon icon={cmd?.icon??"command"} tclass="block">
+	<Icon icon={cmd?.icon??"command"} tclass="block mb-1">
 		<b>{initial.command}</b>: {cmd?.description ?? "Unknown"}
 	</Icon>
 	{#if ready}
