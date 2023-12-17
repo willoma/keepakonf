@@ -88,8 +88,11 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 	switch newStatus {
 	case i.Status:
 		// When status does not change, only re-emit if info, detail and/or out vars change
-		if info != i.Info || !bytes.Equal(detailJSON, i.Detail) {
+		if info != i.Info {
+			// and only log if info change
 			log()
+			storeAndEmit()
+		} else if !bytes.Equal(detailJSON, i.Detail) {
 			storeAndEmit()
 		} else {
 			var outvarsChanged bool
