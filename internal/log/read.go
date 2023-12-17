@@ -48,7 +48,6 @@ func GetPage(offset int) logMessage {
 func loadFromFile(count int) {
 	f, err := os.Open(logPath)
 	if err != nil {
-		Error(err, "Could not read log file")
 		slog.Error("Could not open log file", "error", err)
 		return
 	}
@@ -56,7 +55,6 @@ func loadFromFile(count int) {
 
 	fs, err := f.Stat()
 	if err != nil {
-		Error(err, "Could not read log file")
 		slog.Error("Could not get stats on log file", "error", err)
 		return
 	}
@@ -65,7 +63,7 @@ func loadFromFile(count int) {
 
 	sc := rscanner.NewScanner(f, fs.Size())
 	i := 0
-	for sc.Scan() && i < count {
+	for i < count && sc.Scan() {
 		size := len(sc.Bytes())
 		if size == 0 {
 			continue
@@ -77,7 +75,6 @@ func loadFromFile(count int) {
 	}
 
 	if sc.Err() != nil {
-		Error(err, "Could not read log file")
 		slog.Error("Could not read logs from file", "error", sc.Err())
 		return
 	}
@@ -87,5 +84,6 @@ func loadFromFile(count int) {
 	}
 
 	slices.Reverse(newRecords)
+
 	records = newRecords
 }
