@@ -2,6 +2,8 @@ package log
 
 import (
 	"encoding/json"
+	"errors"
+	"io/fs"
 	"log/slog"
 	"os"
 	"slices"
@@ -41,13 +43,24 @@ func GetPage(offset int) logMessage {
 
 	// We have enough records to provide the requested page
 	start := len(records) - needToHave
+	if start < 0 {
+		start = 0
+	}
 
-	return logMessage{records[start : start+logPageSize], false}
+	end := start + logPageSize
+	if end > len(records) {
+		end = len(records)
+	}
+
+	return logMessage{records[start:end], false}
 }
 
 func loadFromFile(count int) {
 	f, err := os.Open(logPath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return
+		}
 		slog.Error("Could not open log file", "error", err)
 		return
 	}
