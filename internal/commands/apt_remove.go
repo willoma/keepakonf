@@ -105,7 +105,7 @@ func (a *aptRemove) update(knownPackages map[string]external.DpkgPackage) {
 
 	var info string
 	if len(needToRemove) > 0 {
-		msgStatus = msgStatus.IfHigherPriority(status.StatusTodo)
+		msgStatus = status.StatusTodo
 		info = "Need to remove " + strings.Join(needToRemove, ", ")
 	} else if len(pkgs) == 1 {
 		info = "Package " + pkgs[0] + " removed"

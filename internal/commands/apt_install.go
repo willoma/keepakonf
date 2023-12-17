@@ -97,7 +97,7 @@ func (a *aptInstall) update(knownPackages map[string]external.DpkgPackage) {
 
 	var info string
 	if len(needToInstall) > 0 {
-		msgStatus = msgStatus.IfHigherPriority(status.StatusTodo)
+		msgStatus = status.StatusTodo
 		info = "Need to install " + strings.Join(needToInstall, ", ")
 	} else if len(pkgs) == 1 {
 		info = "Package " + pkgs[0] + " installed"

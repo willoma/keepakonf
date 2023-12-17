@@ -114,8 +114,6 @@ func (i *Instruction) updateStatus(newStatus status.Status, info string, detail 
 	case status.StatusFailed:
 		log()
 		storeAndEmit()
-	case status.StatusNone:
-		storeAndEmit()
 	case status.StatusTodo:
 		// Do not change status if it was failed and becomes todo, because it
 		// means there was a recalculation by the watcher, but we want to keep

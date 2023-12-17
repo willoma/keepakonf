@@ -44,21 +44,57 @@ func (g *Group) Apply() {
 
 func (g *Group) updateStatusAndVariables() {
 	vars := variables.GlobalMap()
-	status := status.StatusApplied
+
+	var (
+		instructionRunning bool
+		instructionTodo    bool
+		instructionFailed  bool
+		instructionUnknown bool
+	)
 
 	for _, ins := range g.Instructions {
-		status = status.IfHigherPriority(ins.Status)
+		switch ins.Status {
+		case status.StatusRunning:
+			instructionRunning = true
+		case status.StatusTodo:
+			// Do not record the group as todo if there is a failed or unknown before
+			if !instructionFailed && !instructionUnknown {
+				instructionTodo = true
+			}
+		case status.StatusFailed:
+			// Do not record the group as failed if there is a todo before
+			if !instructionTodo {
+				instructionFailed = true
+			}
+		case status.StatusUnknown:
+			instructionUnknown = true
+		}
+
 		ins.command.UpdateVariables(vars)
 		for k, v := range ins.outVariables {
 			vars.Define(k, v)
 		}
 	}
 
-	if g.Status != status {
-		g.Status = status
+	var newStatus status.Status
+	switch {
+	case instructionRunning:
+		newStatus = status.StatusRunning
+	case instructionFailed:
+		newStatus = status.StatusFailed
+	case instructionUnknown:
+		newStatus = status.StatusUnknown
+	case instructionTodo:
+		newStatus = status.StatusTodo
+	default:
+		newStatus = status.StatusApplied
+	}
+
+	if g.Status != newStatus {
+		g.Status = newStatus
 		g.io.Emit("group status", map[string]any{
 			"group":  g.ID,
-			"status": status,
+			"status": newStatus,
 		})
 	}
 }

@@ -5,28 +5,13 @@ import "github.com/willoma/keepakonf/internal/variables"
 type Status string
 
 const (
-	StatusFailed  Status = "failed"
-	StatusNone    Status = "none"
-	StatusTodo    Status = "todo"
-	StatusRunning Status = "running"
+	// StatusNone may be used in details (eg. cell color), but not in messages
+	StatusNone    Status = ""
 	StatusApplied Status = "applied"
+	StatusRunning Status = "running"
+	StatusTodo    Status = "todo"
+	StatusFailed  Status = "failed"
 	StatusUnknown Status = "unknown"
 )
-
-var priority = map[Status]int{
-	StatusFailed:  5,
-	StatusNone:    4,
-	StatusTodo:    3,
-	StatusRunning: 2,
-	StatusApplied: 1,
-	StatusUnknown: 0,
-}
-
-func (s Status) IfHigherPriority(newS Status) Status {
-	if priority[s] > priority[newS] {
-		return s
-	}
-	return newS
-}
 
 type SendStatus func(newStatus Status, info string, detail Detail, outVariables variables.Variables)
