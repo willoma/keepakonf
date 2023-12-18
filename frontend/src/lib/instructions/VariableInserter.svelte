@@ -3,7 +3,7 @@
 	import { globalVariables } from "$lib/store"
 
 	let focusOnInput = false
-	let showSelector = false
+	let show = false
 
 	function writeVariable(name) {
 		const el = document.activeElement
@@ -13,16 +13,22 @@
 		el.value = `${before}<${name}>${after}`
 		el.selectionStart = newPos
 		el.selectionEnd = newPos
-		showSelector = false
+		show = false
 	}
 </script>
 
-<style>
+<style lang="scss">
+	@import "bulma/sass/components/panel";
+
 	.variableinserterbutton {
 		position: absolute;
 		bottom: 0;
 		right: 0;
 		z-index: 200;
+	}
+
+	a.panel-block:hover {
+			background-color: $panel-block-hover-background-color;
 	}
 </style>
 
@@ -32,35 +38,33 @@
 
 {#if focusOnInput}
 	<div class="variableinserterbutton pb-5 pr-5" role="none" on:mousedown|preventDefault>
-		<Button class="is-primary" icon="variable" on:click={() => showSelector = true}>
+		<Button class="is-primary" icon="variable" on:click={() => show = true}>
 			Variable
 		</Button>
 	</div>
 {/if}
 
-{#if showSelector}
+{#if show}
 	<div class="modal is-active" role="none" on:mousedown|preventDefault>
-		<div class="modal-background" role="none" on:click={() => showSelector = false}></div>
+		<div class="modal-background" role="none" on:click={() => show = false}></div>
 		<div class="modal-content">
 			<div class="box p-0">
-				<div class="menu">
-					<p class="menu-label pt-3 pl-5">
-						Select variable
-					</p>
-					<ul class="menu-list">
-						{#each $globalVariables as v}
-							<li>
-								<a href="#top" on:click|preventDefault={() => writeVariable(v.name)}>
-									<b>{v?.name ?? "Unknown"}</b>: {v?.description ?? "Unknown"} (<code>{v?.value ?? "Unknown"}</code>)
-								</a>
-							</li>
-						{/each}
-					</ul>
-					<p class="menu-label has-text-right mt-1 pb-1 pr-1">
-						<Button icon="cancel" class="is-small" on:click={() => showSelector = false}>
-							Cancel
-						</Button>
-					</p>
+				<div class="panel">
+					<div class="panel-heading is-flex">
+						<div class="is-flex-grow-1">
+							Select variable
+						</div>
+						<div class="is-flex-grow-0">
+							<Button icon="cancel" class="is-small" on:click={() => show = false}>
+								Cancel
+							</Button>
+						</div>
+					</div>
+					{#each $globalVariables as v}
+						<a href="#top" class="panel-block has-text-black w-100" on:click|preventDefault={() => writeVariable(v.name)}>
+							<b>{v?.name ?? "Unknown"}</b>: {v?.description ?? "Unknown"} (<code>{v?.value ?? "Unknown"}</code>)
+						</a>
+					{/each}
 				</div>
 			</div>
 		</div>
