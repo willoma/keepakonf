@@ -1,4 +1,6 @@
 <script>
+	import { fade, fly } from 'svelte/transition';
+
 	import { Button } from "$lib/c"
 	import { globalVariables } from "$lib/store"
 
@@ -24,7 +26,7 @@
 		position: absolute;
 		bottom: 0;
 		right: 0;
-		z-index: 200;
+		z-index: 10;
 	}
 
 	a.panel-block:hover {
@@ -37,7 +39,7 @@
 </div>
 
 {#if focusOnInput}
-	<div class="variableinserterbutton pb-5 pr-5" role="none" on:mousedown|preventDefault>
+	<div class="variableinserterbutton pb-5 pr-5" role="none" on:mousedown|preventDefault in:fly={{x:"-100vw"}} out:fly={{x:"100%"}}>
 		<Button class="is-primary" icon="variable" on:click={() => show = true}>
 			Variable
 		</Button>
@@ -45,7 +47,7 @@
 {/if}
 
 {#if show}
-	<div class="modal is-active" role="none" on:mousedown|preventDefault>
+	<div class="modal is-active" role="none" on:mousedown|preventDefault transition:fade={{duration:50}}>
 		<div class="modal-background" role="none" on:click={() => show = false}></div>
 		<div class="modal-content">
 			<div class="box p-0">

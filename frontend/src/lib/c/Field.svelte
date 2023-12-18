@@ -12,7 +12,7 @@
 <style>
 	.error-message {
 		position: absolute;
-		z-index: 100;
+		z-index: 20;
 		bottom: -1em;
 		left: 1em;
 		pointer-events: none;

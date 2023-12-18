@@ -20,16 +20,16 @@
 
 	export function makeData() {
 		const data = {
-			name: $name.value,
-			icon: $icon.value,
-			instructions: instructions.makeData(),
+			"name": $name.value,
+			"icon": $icon.value,
+			"instructions": instructions.makeData(),
 		}
 		if (group?.id) {
 			data.id = group.id
 		}
 		return data
 	}
-	$: valid = $name.valid && instructionsValid
+	$: valid = $name.valid && $icon.value && instructionsValid
 </script>
 
 <Field field={name} addons>
