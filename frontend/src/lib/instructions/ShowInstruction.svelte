@@ -32,20 +32,22 @@
 		</div>
 		<div class="message-body">
 			<div class="columns">
-				<div class="column content is-one-third is-size-7">
-					<p class="is-size-6">{cmd?.description}</p>
-					{#if cmd?.parameters?.length}
-						<p>Parameters:</p>
-						<ul>
-							{#each cmd.parameters as param}
-								<li>
-									<ShowParameter {param} value={instruction.parameters[param.id]} />
-								</li>
-							{/each}
-						</ul>
-					{/if}
+				<div class="column is-one-third">
+					<div class="content">
+						<p class="is-size-6">{cmd?.description}</p>
+						{#if cmd?.parameters?.length}
+							<p class="is-size-7">Parameters:</p>
+							<ul class="is-size-7">
+								{#each cmd.parameters as param}
+									<li>
+										<ShowParameter {param} value={instruction.parameters[param.id]} />
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
 				</div>
-				<div class="column content is-two-thirds">
+				<div class="column is-two-thirds">
 					{#if instruction.detail}
 						<Detail data={instruction.detail} />
 					{/if}
