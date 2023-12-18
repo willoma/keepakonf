@@ -29,6 +29,8 @@ func instructionFromMap(iface any, vars map[string]string, grp *Group) Instructi
 	}
 
 	switch insType {
+	case "if":
+		return instructionIfFromMap(mapped, vars, grp)
 	case "command":
 		return instructionCommandFromMap(mapped, vars, grp)
 	default:

@@ -12,6 +12,8 @@ import (
 )
 
 type instructionCommand struct {
+	Type string `json:"type"`
+
 	ID         string         `json:"id"`
 	Command    string         `json:"command"`
 	Parameters map[string]any `json:"parameters,omitempty"`
@@ -174,6 +176,7 @@ func instructionCommandFromMap(mapped map[string]any, vars map[string]string, gr
 	parameters, _ := mapped["parameters"].(map[string]any)
 
 	i := &instructionCommand{
+		Type:         "command",
 		ID:           id,
 		Command:      command,
 		Parameters:   parameters,

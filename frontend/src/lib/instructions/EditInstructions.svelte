@@ -3,7 +3,7 @@
 	export let valid
 
 	import EditInstruction from "./EditInstruction.svelte"
-    import InstructionAdder from "./InstructionAdder.svelte";
+    import InstructionAdder from "./InstructionAdder.svelte"
 	import VariableInserter from "./VariableInserter.svelte"
 
 	let instructions = []
@@ -16,8 +16,16 @@
 	}
 	$: initialLoad(initial)
 
-	function addInstruction(name) {
-		instructions = [...instructions, {"command": name}]
+	function addInstruction(data) {
+		switch (data.type) {
+			case "if":
+				instructions = [...instructions, {"type": "if"}]
+				break;
+			case "command":
+			default:
+				instructions = [...instructions, {"type": "command", "command": data.params.name}]
+				break;
+		}
 	}
 
 	function removeInstruction(index) {

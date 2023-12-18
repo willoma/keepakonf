@@ -1,9 +1,11 @@
 import add from "@fortawesome/fontawesome-free/svgs/solid/plus.svg?raw"
 import cancel from "@fortawesome/fontawesome-free/svgs/solid/rotate-left.svg?raw"
 import check from "@fortawesome/fontawesome-free/svgs/solid/check.svg?raw"
+import condition from "@fortawesome/fontawesome-free/svgs/solid/shuffle.svg?raw"
 import command from "@fortawesome/fontawesome-free/svgs/solid/terminal.svg?raw"
 import database from "@fortawesome/fontawesome-free/svgs/solid/database.svg?raw"
 import edit from "@fortawesome/fontawesome-free/svgs/solid/pen-to-square.svg?raw"
+import equal from "@fortawesome/fontawesome-free/svgs/solid/equals.svg?raw"
 import error from "@fortawesome/fontawesome-free/svgs/solid/triangle-exclamation.svg?raw"
 import file from "@fortawesome/fontawesome-free/svgs/solid/file.svg?raw"
 import folder from "@fortawesome/fontawesome-free/svgs/regular/folder.svg?raw"
@@ -25,9 +27,11 @@ export const icons = {
 	add,
 	cancel,
 	check,
+	condition,
 	command,
 	database,
 	edit,
+	equal,
 	error,
 	file,
 	folder,
