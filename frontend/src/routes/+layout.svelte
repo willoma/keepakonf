@@ -38,7 +38,7 @@
 				<h1 class="title is-4 m-3">Keepakonf</h1>
 				<!-- Search box -->
 				<div class="m-2">
-					<input class="input is-small" type="text" placeholder="Filter groups" bind:value="{filter}">
+					<input class="input is-small" type="text" placeholder="Filter groups" bind:value={filter}>
 				</div>
 			</div>
 			<!-- Scrollable menu -->
